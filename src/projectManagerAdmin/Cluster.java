@@ -8,5 +8,5 @@ public class Cluster {
     private float availableBandwidth;   //the amount of Internet bandwidth that is free to utilize in GB/s
     private int numOfVMs; //how many VMs currently exist in the cluster
 
-    private
+    private BaseVM[] myVMs;
 }

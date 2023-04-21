@@ -1,4 +1,4 @@
 package projectManagerAdmin;
 
-public class VM {
+public class VM extends BaseVM {
 }
