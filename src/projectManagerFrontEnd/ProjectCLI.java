@@ -1,6 +1,6 @@
 package projectManagerFrontEnd;
 
-public class projectCLI {
+public class ProjectCLI {
     public static void main(String[] args){
 
     }
