@@ -12,13 +12,23 @@ public class ProjectCLI {
                 " The supported OSes are Windows, Ubuntu and Fedora.");
         while(true) {
             Scanner newScan = new Scanner(System.in);
-            System.out.println ("\nPlease pick an option ny pressing the number next to it:\n1. Create a new VM\n" +
+            System.out.println ("\nPlease pick an option by pressing the number next to it:\n1. Create a new VM\n" +
                     "2. Update a currently existing VM.\n3. Delete a VM.\n4. Show a report with the resources of a certain VM or all of them.\n5. Move on to the next stage.");
             int choice = cluster.getChoice();
             if (choice == 5) {
                 break;
             }
-            cluster.firstMenu(choice);
+            cluster.vmMenu(choice);
+        }
+        System.out.println("\nVM management completed. Moving to Program management:");
+        while(true) {
+            System.out.println("\nPlease pick an option by pressing the number next to it:\n1. Create a new Program\n" +
+                    "2. Move on to the next stage");
+            int choice = cluster.getChoice();
+            if(choice == 2) {
+                break;
+            }
+            cluster.createProgramMenu();
         }
     }
 }

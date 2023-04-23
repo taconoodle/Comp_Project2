@@ -14,16 +14,20 @@ public class Cluster {
     private int numOfVMs; //how many VMs currently exist in the cluster
     private ArrayList<BaseVM> myVMs; //a dynamic array containing all the VMs, using memory dynamically as VMs are created
     private int vmIdCount;
+    private ArrayList<Program> myProgs;
+    private int numOfProgs;
 
     public Cluster() { //initializes the variables of the Cluster
-        availableCPU = 128;
-        availableRAM = 256;
-        availableDiskSpace = 2048;
-        availableGPU = 8;
-        availableBandwidth = 320;
+        availableCPU = AMOUNT_OF_CPU;
+        availableRAM = AMOUNT_OF_RAM;
+        availableDiskSpace = AMOUNT_OF_DISK_SPACE;
+        availableGPU = AMOUNT_OF_GPU;
+        availableBandwidth = NUM_OF_BANDWIDTH;
         numOfVMs = 0;
         vmIdCount = 0;
+        numOfProgs = 0;
         myVMs = new ArrayList<>(1);  //ArrayList that allocates memory dynamically, as the VMs can be infinite as long as there are resources
+        myProgs = new ArrayList<>(1);
     }
 
     private void updateResources(int cores, double ram) {
@@ -344,7 +348,7 @@ public class Cluster {
         return choice;
     }
 
-    public void firstMenu(int choice) {
+    public void vmMenu(int choice) {
         switch (choice) {
             case 1:
                 createVmMenu();
@@ -586,4 +590,45 @@ public class Cluster {
         }
         displayVmResources(id);
     }
+
+    private void createProgram(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime) {
+        double[] totalResources = calculateTotalResources();
+        if((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
+                (bandwidth < 0 || bandwidth > totalResources[4]) || expectedTime <= 0) {
+            System.out.println("System error: Invalid values or not enough VMs to support to execute the program.");
+            return;
+        }
+        double priority = ((cores / totalResources[0]) + (ram / totalResources[1]) + (diskSpace / totalResources[2]) + (gpu / totalResources[3]) + (bandwidth / totalResources[4]));
+        Program newProg = new Program(cores, ram, diskSpace, gpu, bandwidth, expectedTime, priority);
+        myProgs.add(newProg);
+        numOfProgs++;
+        System.out.println("Successfully added new Program with ID: " + newProg.getPID() + ".");
+    }
+
+    private double[] calculateTotalResources() {
+        double[] totalResources = new double[5];
+        totalResources[0] = AMOUNT_OF_CPU - availableCPU;
+        totalResources[1] = AMOUNT_OF_RAM - availableRAM;
+        totalResources[2] = AMOUNT_OF_DISK_SPACE - availableDiskSpace;
+        totalResources[3] = AMOUNT_OF_GPU - availableGPU;
+        totalResources[4] = NUM_OF_BANDWIDTH - availableBandwidth;
+        return totalResources;
+    }
+
+    public void createProgramMenu () {
+        Scanner newScan = new Scanner(System.in);
+        System.out.println("Please type in the number of cores the program needs to be executed.");
+        int cores = newScan.nextInt();
+        System.out.println("Please type in the amount of RAM the program needs to be executed.");
+        int ram = newScan.nextInt();
+        System.out.println("Please type in the amount of SSD Disk Space the program needs to be executed.");
+        int diskSpace = newScan.nextInt();
+        System.out.println("Please type in the number of GPUs the program needs to be executed.");
+        int gpu = newScan.nextInt();
+        System.out.println("Please type in the amount of Bandwidth the program needs to be executed.");
+        int bandwidth = newScan.nextInt();
+        System.out.println("Please type in the expected execution time of the program in seconds?");
+        int expectedTime = newScan.nextInt();
+        createProgram(cores, ram, diskSpace, gpu, bandwidth, expectedTime);
+    }//Lady, runnin' down to the riptide
 }
