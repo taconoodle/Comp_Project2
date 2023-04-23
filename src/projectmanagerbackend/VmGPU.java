@@ -1,4 +1,4 @@
-package projectmanageradmin;
+package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
 
@@ -30,6 +30,6 @@ public class VmGPU extends BaseVM{
 
     @Override
     protected String displayResources() {
-        return getVmId() + "\t" + getVmCores() + "\t" + getVmRam() + "\t" + getVmDiskSpace() + "\t" + getVmGPUs();
+        return "\tVM ID:\t" + getVmId() + "\tVM Cores:\t" + getVmCores() + "\tVM RAM:\t" + getVmRam() + "\tVM Disk Space:\t" + getVmDiskSpace() + "\tVM GPUs:\t" + getVmGPUs();
     }
 }

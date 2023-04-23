@@ -1,4 +1,4 @@
-package projectmanageradmin;
+package projectmanagerbackend;
 
 import static globals.Globals.*;
 import java.util.ArrayList;
@@ -98,7 +98,35 @@ public class Cluster {
                 return i;
             }
         }
+        System.out.println("System error. No VM with this ID could be found.");
         return -1;
+    }
+
+    private BaseVM getVmById(int id) {
+        for (int i = 0; i < numOfVMs; i++) {
+            if(myVMs.get(i).getVmId() == id) {
+                return myVMs.get(i);
+            }
+        }
+        return myVMs.get(0);
+    }
+
+    private int getVmType(BaseVM vm) {
+        if(vm instanceof VM) {
+            return 1;
+        }
+        else if(vm instanceof PlainVM) {
+            return 2;
+        }
+        else if(vm instanceof VmGPU) {
+            return 3;
+        }
+        else if (vm instanceof VmNetworked) {
+            return 4;
+        }
+        else {
+            return 5;
+        }
     }
 
     private OperatingSystems getOS (String os) {    //returns the requested OS
@@ -184,105 +212,111 @@ public class Cluster {
     }
 
     private void updateVM(int vmID, int cores, double ram, String os) {
-        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM)) {
+        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1) {
             System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(),myVMs.get(vmID).getVmRam());
-        myVMs.get(vmID).updateVM(cores, ram, os);
+        myVMs.get(vmID).updateVM(cores, ram, getOS(os));
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam());
     }
 
     private void updatePlainVM(int vmID, int cores, double ram, String os, double diskSpace) {
-        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace)) {
+        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) || osExists(os) == -1) {
             System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
-        myVMs.get(vmID).updateVM(cores, ram, os, diskSpace);
+        myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
     }
 
     private void updateVmGPU(int vmID, int cores, double ram, String os, double diskSpace, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
-                (gpus <= 0 || gpus > availableGPU)) {
+                (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
             System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
-        myVMs.get(vmID).updateVM(cores, ram, os, diskSpace, gpus);
+        myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
     }
 
     private void updateVmNetworked(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
-                (bandwidth <= MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth)) {
+                (bandwidth <= MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || osExists(os) == -1) {
             System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
-        myVMs.get(vmID).updateVM(cores, ram, os, diskSpace, bandwidth);
+        myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
     }
 
     private void updateVmNetworkedGPU(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
-                (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU)) {
+                (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
             System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
-        myVMs.get(vmID).updateVM(cores, ram, os, diskSpace, bandwidth, gpus);
+        myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
     }
 
-    private void deleteVM(int vmID, int cores, double ram) {
+    private void deleteVM(int vmID) {
         if (findVmById(vmID) == -1) {
             System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
             return;
         }
-        addResources(cores, ram);
+        addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
+        System.out.println("VM successfully deleted.");
     }
-    private void deletePlainVM(int vmID, int cores, double ram, double diskSpace) {
+    private void deletePlainVM(int vmID) {
         if (findVmById(vmID) == -1) {
             System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
             return;
         }
-        addResources(cores, ram, diskSpace);
+        addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-    }
-
-    private void deleteVmGPU(int vmID, int cores, double ram, double diskSpace, int gpus) {
-        if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
-            return;
-        }
-        addResources(cores, ram, diskSpace, gpus);
-        myVMs.remove(myVMs.get(findVmById(vmID)));
-        numOfVMs--;
+        System.out.println("VM successfully deleted.");
     }
 
-    private void deleteVmNetworked(int vmID, int cores, double ram, double diskSpace, double bandwidth) {
+    private void deleteVmGPU(int vmID) {
         if (findVmById(vmID) == -1) {
             System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
             return;
         }
-        addResources(cores, ram, diskSpace, bandwidth);
+        addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmGPUs());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
+        System.out.println("VM successfully deleted.");
     }
 
-    private void deleteVmNetworkedGPU(int vmID, int cores, double ram, double diskSpace, double bandwidth, int gpus) {
+    private void deleteVmNetworked(int vmID) {
         if (findVmById(vmID) == -1) {
             System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
             return;
         }
-        addResources(cores, ram, diskSpace, bandwidth, gpus);
+        addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmBandwidth());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
+        System.out.println("VM successfully deleted.");
+    }
+
+    private void deleteVmNetworkedGPU(int vmID) {
+        if (findVmById(vmID) == -1) {
+            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            return;
+        }
+        addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(),
+                myVMs.get(findVmById(vmID)).getVmBandwidth(), myVMs.get(findVmById(vmID)).getVmGPUs());
+        myVMs.remove(myVMs.get(findVmById(vmID)));
+        numOfVMs--;
+        System.out.println("VM successfully deleted.");
     }
 
     private void displayVmResources(int id) {
@@ -316,13 +350,13 @@ public class Cluster {
                 createVmMenu();
                 break;
             case 2:
-                //updateVmMenu();
+                updateVmMenu();
                 break;
             case 3:
-                //deleteVmMenu();
+                deleteVmMenu();
                 break;
             case 4:
-                //displayVmResourcesMenu();
+                displayVmResourcesMenu();
                 break;
         }
     }
@@ -396,4 +430,160 @@ public class Cluster {
                 break;
         }
     }//And I think it's gonna be a long-long time, till touchdown brings us around
+
+    private void updateVmMenu() {
+        if (numOfVMs == 0) {
+            System.out.println ("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+            return;
+        }
+        Scanner newScan = new Scanner(System.in);
+        System.out.println("Please type in the ID of the VM you wish to update:");
+        int id = newScan.nextInt();
+        if(findVmById(id) == -1) {
+            return;
+        }
+        int vmType = getVmType(getVmById(id));
+        switch (vmType) {
+            case 1:
+                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+                int vmCores = newScan.nextInt();
+                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
+                double vmRam = newScan.nextDouble();
+                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
+                String vmOs = newScan.next();
+                updateVM(id, vmCores, vmRam, vmOs);
+                break;
+            case 2:
+                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+                vmCores = newScan.nextInt();
+                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
+                vmRam = newScan.nextDouble();
+                System.out.println("Please type in the name of the OS you wish to use with the VM.");
+                vmOs = newScan.next();
+                System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
+                double vmDiskSpace = newScan.nextDouble();
+                updatePlainVM(id, vmCores, vmRam, vmOs, vmDiskSpace);
+                break;
+            case 3:
+                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+                vmCores = newScan.nextInt();
+                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
+                vmRam = newScan.nextDouble();
+                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
+                vmOs = newScan.next();
+                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
+                vmDiskSpace = newScan.nextDouble();
+                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM");
+                int vmGpus = newScan.nextInt();
+                updateVmGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
+                break;
+            case 4:
+                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+                vmCores = newScan.nextInt();
+                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
+                vmRam = newScan.nextDouble();
+                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
+                vmOs = newScan.next();
+                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
+                vmDiskSpace = newScan.nextDouble();
+                System.out.println("Please type int the updated amount of GB/s this VM can use.");
+                double vmBandwidth = newScan.nextDouble();
+                updateVmNetworked(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
+                break;
+            case 5:
+                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+                vmCores = newScan.nextInt();
+                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
+                vmRam = newScan.nextDouble();
+                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
+                vmOs = newScan.next();
+                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
+                vmDiskSpace = newScan.nextDouble();
+                System.out.println("Please type int the updated amount of GB/s this VM can use.");
+                vmBandwidth = newScan.nextDouble();
+                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM");
+                vmGpus = newScan.nextInt();
+                updateVmNetworkedGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
+                break;
+        }
+    }
+
+    private void deleteVmMenu() {
+        if (numOfVMs == 0) {
+            System.out.println ("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+            return;
+        }
+        Scanner newScan = new Scanner(System.in);
+        System.out.println("Please type in the ID of the VM you wish to delete:");
+        int id = newScan.nextInt();
+        if(findVmById(id) == -1) {
+            return;
+        }
+        int vmType = getVmType(getVmById(id));
+        switch (vmType) {
+            case 1:
+                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
+                String deletionChoice = newScan.next().toUpperCase();
+                if (!deletionChoice.equals("Y")) {
+                    return;
+                }
+                deleteVM(id);
+                break;
+            case 2:
+                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
+                deletionChoice = newScan.next().toUpperCase();
+                if (!deletionChoice.equals("Y")) {
+                    return;
+                }
+                deletePlainVM(id);
+                break;
+            case 3:
+                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
+                deletionChoice = newScan.next().toUpperCase();
+                if (!deletionChoice.equals("Y")) {
+                    return;
+                }
+                deleteVmGPU(id);
+                break;
+            case 4:
+                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to  or anything else to cancel.");
+                deletionChoice = newScan.next().toUpperCase();
+                if (!deletionChoice.equals("Y")) {
+                    return;
+                }
+                deleteVmNetworked(id);
+                break;
+            case 5:
+                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
+                deletionChoice = newScan.next().toUpperCase();
+                if (!deletionChoice.equals("Y")) {
+                    return;
+                }
+                deleteVmNetworkedGPU(id);
+        }
+    }
+
+    private void displayVmResourcesMenu() {
+        if (numOfVMs == 0) {
+            System.out.println ("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+            return;
+        }
+        Scanner newScan = new Scanner(System.in);
+        System.out.println("Do you want to display the resources of all VMs or choose one? Press 1 for all and 2 to pick.");
+        int displayChoice = newScan.nextInt();
+        if (displayChoice != 1 && displayChoice != 2) {
+            System.out.println("Invalid choice number.");
+            return;
+        }
+        if(displayChoice == 1) {
+            displayAllVmResources();
+            return;
+        }
+        System.out.println("Please type in the ID of the VM you wish to display the resources of:");
+        int id = newScan.nextInt();
+        if (findVmById(id) == -1) {
+            return;
+        }
+        displayVmResources(id);
+    }
 }

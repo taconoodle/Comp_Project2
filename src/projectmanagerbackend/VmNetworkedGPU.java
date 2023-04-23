@@ -1,12 +1,13 @@
-package projectmanageradmin;
+package projectmanagerbackend;
 
 import globals.Globals;
 
-public class VmNetworked extends BaseVM{
-    protected VmNetworked(int id, int cores, double ram, Globals.OperatingSystems os, double diskSpace, double bandwidth) {
+public class VmNetworkedGPU extends BaseVM{
+    protected VmNetworkedGPU(int id, int cores, double ram, Globals.OperatingSystems os, double diskSpace, double bandwidth, int gpus) {
         super(id, cores, ram, os);
         super.setVmDiskSpace(diskSpace);
         super.setVmBandwidth(bandwidth);
+        super.setVmGPUs(gpus);
     }
 
     @Override
@@ -26,10 +27,14 @@ public class VmNetworked extends BaseVM{
         if(parameters[4] != null) {
             super.setVmBandwidth((double) parameters[4]);   //fifth parameter should be the updated amount of bandwidth
         }
+        if(parameters[5] != null) {
+            super.setVmGPUs((int) parameters[5]); //sixth parameter should be the updated amount of GPUs
+        }
     }
 
     @Override
     protected String displayResources() {
-        return getVmId() + "\t" + getVmCores() + "\t" + getVmRam() + "\t" + getVmDiskSpace() + "\t" + getVmBandwidth();
+        return "\tVM ID:\t" + getVmId() + "\tVM Cores:\t" + getVmCores() + "\tVM RAM:\t" + getVmRam() + "\tVM Disk Space:\t" + getVmDiskSpace() + "\tVM Bandwidth:\t"
+                + getVmBandwidth() + "\tVM GPUs:\t" + getVmGPUs();
     }
 }

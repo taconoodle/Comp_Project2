@@ -1,4 +1,4 @@
-package projectmanageradmin;
+package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
 
@@ -22,6 +22,6 @@ public class VM extends BaseVM {
 
     @Override
     protected String displayResources() {
-        return getVmId() + "\t" + getVmCores() + "\t" + getVmRam();
+        return "\tVM ID:\t" + getVmId() + "\tVM Cores\t" + getVmCores() + "\tVM RAM\t" + getVmRam();
     }
 }

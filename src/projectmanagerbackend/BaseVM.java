@@ -1,4 +1,4 @@
-package projectmanageradmin;
+package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
 
