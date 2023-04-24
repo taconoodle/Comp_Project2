@@ -26,6 +26,7 @@ public class ProjectCLI {
                     "2. Move on to the next stage");
             int choice = cluster.getChoice();
             if(choice == 2) {
+                cluster.sortProgramsByPriority(cluster.getMyProgs());
                 break;
             }
             cluster.createProgramMenu();

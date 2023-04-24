@@ -17,6 +17,86 @@ public class Cluster {
     private ArrayList<Program> myProgs;
     private int numOfProgs;
 
+    private int getAvailableCPU() {
+        return availableCPU;
+    }
+
+    private void setAvailableCPU(int availableCPU) {
+        this.availableCPU = availableCPU;
+    }
+
+    private double getAvailableRAM() {
+        return availableRAM;
+    }
+
+    private void setAvailableRAM(double availableRAM) {
+        this.availableRAM = availableRAM;
+    }
+
+    private double getAvailableDiskSpace() {
+        return availableDiskSpace;
+    }
+
+    private void setAvailableDiskSpace(double availableDiskSpace) {
+        this.availableDiskSpace = availableDiskSpace;
+    }
+
+    private int getAvailableGPU() {
+        return availableGPU;
+    }
+
+    private void setAvailableGPU(int availableGPU) {
+        this.availableGPU = availableGPU;
+    }
+
+    private double getAvailableBandwidth() {
+        return availableBandwidth;
+    }
+
+    private void setAvailableBandwidth(double availableBandwidth) {
+        this.availableBandwidth = availableBandwidth;
+    }
+
+    private int getNumOfVMs() {
+        return numOfVMs;
+    }
+
+    private void setNumOfVMs(int numOfVMs) {
+        this.numOfVMs = numOfVMs;
+    }
+
+    private ArrayList<BaseVM> getMyVMs() {
+        return myVMs;
+    }
+
+    private void setMyVMs(ArrayList<BaseVM> myVMs) {
+        this.myVMs = myVMs;
+    }
+
+    private int getVmIdCount() {
+        return vmIdCount;
+    }
+
+    private void setVmIdCount(int vmIdCount) {
+        this.vmIdCount = vmIdCount;
+    }
+
+    public ArrayList<Program> getMyProgs() {
+        return myProgs;
+    }
+
+    private void setMyProgs(ArrayList<Program> myProgs) {
+        this.myProgs = myProgs;
+    }
+
+    private int getNumOfProgs() {
+        return numOfProgs;
+    }
+
+    private void setNumOfProgs(int numOfProgs) {
+        this.numOfProgs = numOfProgs;
+    }
+
     public Cluster() { //initializes the variables of the Cluster
         availableCPU = AMOUNT_OF_CPU;
         availableRAM = AMOUNT_OF_RAM;
@@ -595,14 +675,27 @@ public class Cluster {
         double[] totalResources = calculateTotalResources();
         if((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
                 (bandwidth < 0 || bandwidth > totalResources[4]) || expectedTime <= 0) {
-            System.out.println("System error: Invalid values or not enough VMs to support to execute the program.");
+            System.out.println("\nSystem error: Invalid values or not enough VMs to support to execute the program.");
             return;
         }
-        double priority = ((cores / totalResources[0]) + (ram / totalResources[1]) + (diskSpace / totalResources[2]) + (gpu / totalResources[3]) + (bandwidth / totalResources[4]));
-        Program newProg = new Program(cores, ram, diskSpace, gpu, bandwidth, expectedTime, priority);
+        Program newProg = new Program(cores, ram, diskSpace, gpu, bandwidth, expectedTime, calculateProgramPriority(totalResources, cores, ram, diskSpace, gpu, bandwidth));
         myProgs.add(newProg);
         numOfProgs++;
-        System.out.println("Successfully added new Program with ID: " + newProg.getPID() + ".");
+        System.out.println("\nSuccessfully added new Program with ID: " + newProg.getPID() + ".");
+    }
+
+    private double calculateProgramPriority(double[] resources, int cores, int ram, int diskSpace, int gpu, int bandwidth) {
+        double priority = ((cores / resources[0]) + (ram / resources[1]));
+        if (resources[2] != 0) {
+            priority += diskSpace / resources[2];
+        }
+        if (resources[3] != 0) {
+            priority += gpu / resources[3];
+        }
+        if (resources[4] != 0) {
+            priority += bandwidth / resources[4];
+        }
+        return priority;
     }
 
     private double[] calculateTotalResources() {
@@ -631,4 +724,20 @@ public class Cluster {
         int expectedTime = newScan.nextInt();
         createProgram(cores, ram, diskSpace, gpu, bandwidth, expectedTime);
     }//Lady, runnin' down to the riptide
+
+    private void swap (ArrayList<Program> arr, int indx1, int indx2) {
+        Program temp = arr.get(indx1);
+        arr.set(indx1, arr.get(indx2));
+        arr.set(indx2, temp);
+    }
+
+    public void sortProgramsByPriority(ArrayList<Program> programs) {
+        for (int i = 0; i < numOfProgs; i++)  {
+            for (int j = 1; j < numOfProgs - i; j++) {
+                if (programs.get(j).getPPriority() < programs.get(j - 1).getPPriority()) {
+                    swap(programs, j - 1, j);
+                }
+            }
+        }
+    }
 }

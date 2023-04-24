@@ -86,7 +86,7 @@ public class Program {
         this.pExpectedTime = pExpectedTime;
     }
 
-    private double getPPriority() {
+    protected double getPPriority() {
         return pPriority;
     }
 
