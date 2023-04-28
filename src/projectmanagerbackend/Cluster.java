@@ -1,6 +1,8 @@
 package projectmanagerbackend;
 
 import static globals.Globals.*;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -731,7 +733,7 @@ public class Cluster {
         return vmWithLowestLoad;
     }
 
-    public void assignProgramsToVms() {
+    public void assignProgramsToVms() throws IOException {
         long timeToSleep = 2L;
         TimeUnit time = TimeUnit.SECONDS;
         while (!queue.isEmpty()) {
@@ -741,7 +743,10 @@ public class Cluster {
                 if (possibleVMs.isEmpty()) {
                     queue.peek().setAssignAttempts(queue.peek().getAssignAttempts() + 1);
                     System.out.println("Program with ID " + queue.peek().getPID() + " was not able to be assigned to any VM to avoid overloading. Assignement attempts remaining: " + (MAX_ASSIGNMENT_ATTEMPTS - queue.peek().getAssignAttempts()));
-                    if (queue.peek().getAssignAttempts() != 3) {
+                    if (queue.peek().getAssignAttempts() == 3) {
+                        saveFailedProgram(queue.pop());
+                    }
+                    else {
                         queue.push(queue.pop());
                         try {
                             time.sleep(timeToSleep);
@@ -787,5 +792,12 @@ public class Cluster {
             }
         }
         System.out.println("\nAll programs are done executing.");
+    }
+
+    private void saveFailedProgram(Program prog) throws IOException {
+        FileOutputStream fout = new FileOutputStream("./log/rejected.out");
+        ObjectOutputStream out = new ObjectOutputStream(fout);
+        out.writeObject(prog);
+        out.flush();
     }
 }
