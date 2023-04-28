@@ -10,10 +10,11 @@ public class Program {
     private int pGpu;
     private int pBandwidth;
     private int pExpectedTime;
-    //private int pExecTime;
-    //private int pStartExecTime;
-    //private int currentExecTime;
+    private long pExecTime;
+    private long pStartExecTime;
+    private long currentExecTime;
     private double pPriority;
+    private int assignAttempts;
 
     protected Program(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime, double priority) {
         Random newRandom = new Random();
@@ -24,10 +25,11 @@ public class Program {
         pGpu = gpu;
         pBandwidth = bandwidth;
         pExpectedTime = expectedTime;
-        //pExecTime = 0;
-        //pStartExecTime = 0;
-        //currentExecTime = 0;
+        pExecTime = 0;
+        pStartExecTime = 0;
+        currentExecTime = 0;
         pPriority = priority;
+        assignAttempts = 0;
     }//never going home
 
     protected int getPID() {
@@ -38,7 +40,7 @@ public class Program {
         this.pID = pID;
     }
 
-    private int getPCores() {
+    protected int getPCores() {
         return pCores;
     }
 
@@ -46,7 +48,7 @@ public class Program {
         this.pCores = pCores;
     }
 
-    private int getPRam() {
+    protected int getPRam() {
         return pRam;
     }
 
@@ -54,7 +56,7 @@ public class Program {
         this.pRam = pRam;
     }
 
-    private int getPDiskSpace() {
+    protected int getPDiskSpace() {
         return pDiskSpace;
     }
 
@@ -62,7 +64,7 @@ public class Program {
         this.pDiskSpace = pDiskSpace;
     }
 
-    private int getPGpu() {
+    protected int getPGpu() {
         return pGpu;
     }
 
@@ -70,7 +72,7 @@ public class Program {
         this.pGpu = pGpu;
     }
 
-    private int getPBandwidth() {
+    protected int getPBandwidth() {
         return pBandwidth;
     }
 
@@ -78,7 +80,7 @@ public class Program {
         this.pBandwidth = pBandwidth;
     }
 
-    private int getPExpectedTime() {
+    protected int getPExpectedTime() {
         return pExpectedTime;
     }
 
@@ -90,7 +92,47 @@ public class Program {
         return pPriority;
     }
 
-    private void setPPriority(int pPriority) {
+    private void setPPriority(double pPriority) {
         this.pPriority = pPriority;
+    }
+
+    protected int getpExpectedTime() {
+        return pExpectedTime;
+    }
+
+    public void setpExpectedTime(int pExpectedTime) {
+        this.pExpectedTime = pExpectedTime;
+    }
+
+    protected long getpExecTime() {
+        return currentExecTime - pStartExecTime;
+    }
+
+    public void setpExecTime(long pExecTime) {
+        this.pExecTime = pExecTime;
+    }
+
+    protected long getpStartExecTime() {
+        return pStartExecTime;
+    }
+
+    public void setpStartExecTime(long pStartExecTime) {
+        this.pStartExecTime = pStartExecTime;
+    }
+
+    protected long getCurrentExecTime() {
+        return System.currentTimeMillis();
+    }
+
+    public void setCurrentExecTime(int currentExecTime) {
+        this.currentExecTime = currentExecTime;
+    }
+
+    public int getAssignAttempts() {
+        return assignAttempts;
+    }
+
+    public void setAssignAttempts(int assignAttempts) {
+        this.assignAttempts = assignAttempts;
     }
 }

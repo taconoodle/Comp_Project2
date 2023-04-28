@@ -4,6 +4,7 @@ import globals.Globals.OperatingSystems;
 
 public class PlainVM extends VM {
     private double vmDiskSpace;
+    private double allocatedDiskSpace;
     protected PlainVM(int id, int cores, double ram, OperatingSystems os, double diskSpace) {
         super(id, cores, ram, os);
         vmDiskSpace = diskSpace;
@@ -21,23 +22,13 @@ public class PlainVM extends VM {
     }
 
     @Override
-    protected int getVmGPUs() {
-        return 0;
+    public double getAllocatedDiskSpace() {
+        return allocatedDiskSpace;
     }
 
     @Override
-    protected void setVmGPUs(int vmGPUs) {
-
-    }
-
-    @Override
-    protected double getVmBandwidth() {
-        return 0;
-    }
-
-    @Override
-    protected void setVmBandwidth(double vmBandwidth) {
-
+    public void setAllocatedDiskSpace(double allocatedDiskSpace) {
+        this.allocatedDiskSpace = allocatedDiskSpace;
     }
 
     @Override
@@ -59,5 +50,49 @@ public class PlainVM extends VM {
     @Override
     protected String displayResources() {
         return "\tVM ID: " + getVmId() + "\tVM Cores: " + getVmCores() + "\tVM RAM: " + getVmRam() + " GB" + "\tVM Disk Space: " + vmDiskSpace + " GB";
+    }
+
+    @Override
+    protected double calculateVmLoad() {
+        double vmLoad = 0;
+        if (getAllocatedCores() != 0) {
+            vmLoad += ( (double) getAllocatedCores() / (double) getVmCores());
+        }
+        if (getAllocatedRam() != 0) {
+            vmLoad += (getAllocatedRam() / getVmRam());
+        }
+        if (getAllocatedDiskSpace() != 0) {
+            vmLoad += (getAllocatedDiskSpace() / getVmDiskSpace());
+        }
+        return vmLoad / 3;
+    }
+
+    @Override
+    protected void updateVmResources(String mode) {
+        switch (mode){
+            case "commit": {
+                setVmCores(getVmCores() - getAllocatedCores());
+                setVmRam(getVmRam() - getAllocatedRam());
+                vmDiskSpace -= allocatedDiskSpace;
+                break;
+            }
+            case "release": {
+                setVmCores(getVmCores() + getAllocatedCores());
+                setVmRam(getVmRam() + getAllocatedRam());
+                vmDiskSpace += allocatedDiskSpace;
+            }
+        }
+    }
+
+    @Override
+    protected void startWorkingOnProgram(Program prog) {
+        allocatedDiskSpace -= prog.getPDiskSpace();
+        super.startWorkingOnProgram(prog);
+    }
+
+    @Override
+    protected void stopWorkingOnProgram(Program prog) {
+        allocatedDiskSpace += prog.getPDiskSpace();
+        super.stopWorkingOnProgram(prog);
     }
 }

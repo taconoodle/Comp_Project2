@@ -1,18 +1,28 @@
 package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
+import java.util.ArrayList;
 
 public abstract class VM {
     private int vmId;
     private int vmCores;
     private double vmRam;
     private OperatingSystems vmOS;
+    private double vmLoad;
+    private int allocatedCores;
+    private double allocatedRam;
+    private ArrayList<Program> workingOn;
+    private int numOfProgsInVm;
 
     protected VM(int id, int cores, double ram, OperatingSystems os) {
         vmId = id;
         vmCores  = cores;
         vmRam = ram;
         vmOS = os;
+        vmLoad = 0;
+        allocatedCores = 0;
+        allocatedRam = 0;
+        workingOn = new ArrayList<Program>();
     }
 
     public int getVmId() {
@@ -57,16 +67,107 @@ public abstract class VM {
 
     protected abstract String displayResources();
 
-    protected abstract double getVmDiskSpace();
+    protected double getVmDiskSpace() {
+        return 0;
+    }
 
 
-    protected abstract void setVmDiskSpace(double vmDiskSpace);
+    protected void setVmDiskSpace(double vmDiskSpace) {
+        return;
+    }
 
-    protected abstract int getVmGPUs();
+    protected int getVmGPUs() {
+        return 0;
+    }
 
-    protected abstract void setVmGPUs(int vmGPUs);
+    protected void setVmGPUs(int vmGPUs) {
+        return;
+    }
 
-    protected abstract double getVmBandwidth();
+    protected double getVmBandwidth() {
+        return 0;
+    }
 
-    protected abstract void setVmBandwidth(double vmBandwidth);
+    protected void setVmBandwidth(double vmBandwidth) {
+        return;
+    }
+
+    protected double getVmLoad() {
+        return vmLoad;
+    };
+
+    protected void setVmLoad(double vmLoad) {
+        this.vmLoad = vmLoad;
+    };
+
+    public int getAllocatedCores() {
+        return allocatedCores;
+    }
+
+    public void setAllocatedCores(int allocatedCores) {
+        this.allocatedCores = allocatedCores;
+    }
+
+    public double getAllocatedRam() {
+        return allocatedRam;
+    }
+
+    public void setAllocatedRam(double allocatedRam) {
+        this.allocatedRam = allocatedRam;
+    }
+
+    public double getAllocatedDiskSpace() {
+        return 0;
+    }
+
+    public void setAllocatedDiskSpace(double allocatedDiskSpace) {}
+
+    public int getAllocatedGPUs() {
+        return 0;
+    }
+
+    public void setAllocatedGPUs(int allocatedGPUs) {}
+
+    public double getAllocatedBandwidth() {
+        return 0;
+    }
+
+    public void setAllocatedBandwidth(double allocatedBandwidth) {}
+
+    protected ArrayList<Program> getWorkingOn() {
+        return workingOn;
+    }
+
+    public void setWorkingOn(ArrayList<Program> workingOn) {
+        this.workingOn = workingOn;
+    }
+
+    protected int getNumOfProgsInVm() {
+        return numOfProgsInVm;
+    }
+
+    public void setNumOfProgsInVm(int numOfProgsInVm) {
+        this.numOfProgsInVm = numOfProgsInVm;
+    }
+
+    protected abstract double calculateVmLoad ();
+
+    protected abstract void updateVmResources(String mode);
+
+    protected void startWorkingOnProgram(Program prog) {
+        prog.setpStartExecTime(System.currentTimeMillis());
+        allocatedCores += prog.getPCores();
+        allocatedRam += prog.getPRam();
+        workingOn.add(prog);
+        numOfProgsInVm++;
+        updateVmResources("commit");
+    }
+
+    protected void stopWorkingOnProgram(Program prog) {
+        allocatedCores -= prog.getPCores();
+        allocatedRam -= prog.getPRam();
+        workingOn.remove(prog);
+        numOfProgsInVm--;
+        updateVmResources("release");
+    }
 }

@@ -5,6 +5,7 @@ import globals.Globals;
 public class VmNetworkedGPU extends VmNetworked {
 
     private int vmGPUs;
+    private int allocatedGPUs;
     protected VmNetworkedGPU(int id, int cores, double ram, Globals.OperatingSystems os, double diskSpace, double bandwidth, int gpus) {
         super(id, cores, ram, os, diskSpace, bandwidth);
         vmGPUs = gpus;
@@ -18,6 +19,16 @@ public class VmNetworkedGPU extends VmNetworked {
     @Override
     public void setVmGPUs(int vmGPUs) {
         this.vmGPUs = vmGPUs;
+    }
+
+    @Override
+    public int getAllocatedGPUs() {
+        return allocatedGPUs;
+    }
+
+    @Override
+    public void setAllocatedGPUs(int allocatedGPUs) {
+        this.allocatedGPUs = allocatedGPUs;
     }
 
     @Override
@@ -45,5 +56,40 @@ public class VmNetworkedGPU extends VmNetworked {
     @Override
     protected String displayResources() {
         return super.displayResources() + "\tVM GPUs: " + getVmGPUs();
+    }
+
+    @Override
+    protected double calculateVmLoad() {
+        double vmLoad = super.calculateVmLoad();
+        if (getAllocatedGPUs() != 0) {
+            vmLoad += ( (double) getAllocatedGPUs() / (double) getVmGPUs());
+        }
+        return vmLoad / 5;
+    }
+
+    @Override
+    protected void updateVmResources(String mode) {
+        switch (mode) {
+            case "commit":
+                super.updateVmResources("commit");
+                vmGPUs -= allocatedGPUs;
+                break;
+            case "release":
+                super.updateVmResources("release");
+                vmGPUs += allocatedGPUs;
+                break;
+        }
+
+    }
+
+    @Override
+    protected void startWorkingOnProgram(Program prog) {
+        allocatedGPUs -= prog.getPGpu();
+        super.startWorkingOnProgram(prog);
+    }
+    @Override
+    protected void stopWorkingOnProgram(Program prog) {
+        allocatedGPUs += prog.getPGpu();
+        super.stopWorkingOnProgram(prog);
     }
 }

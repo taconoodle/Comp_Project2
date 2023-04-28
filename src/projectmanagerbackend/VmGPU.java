@@ -4,6 +4,7 @@ import globals.Globals.OperatingSystems;
 
 public class VmGPU extends PlainVM {
     private int vmGPUs;
+    private int allocatedGPUs;
     protected VmGPU (int id, int cores, double ram, OperatingSystems os, double diskSpace, int gpus) {
         super(id, cores, ram, os, diskSpace);
         vmGPUs = gpus;
@@ -17,6 +18,16 @@ public class VmGPU extends PlainVM {
     @Override
     public void setVmGPUs(int vmGPUs) {
         this.vmGPUs = vmGPUs;
+    }
+
+    @Override
+    public int getAllocatedGPUs() {
+        return allocatedGPUs;
+    }
+
+    @Override
+    public void setAllocatedGPUs(int allocatedGPUs) {
+        this.allocatedGPUs = allocatedGPUs;
     }
 
     @Override
@@ -41,5 +52,41 @@ public class VmGPU extends PlainVM {
     @Override
     protected String displayResources() {
         return super.displayResources() + "\tVM GPUs: " + vmGPUs;
+    }
+
+    @Override
+    protected double calculateVmLoad() {
+        double vmLoad = super.calculateVmLoad();
+        if (getAllocatedGPUs() != 0) {
+            vmLoad += ( (double) getAllocatedGPUs() / (double) getVmGPUs());
+        }
+        return vmLoad / 4;
+    }
+
+    @Override
+    protected void updateVmResources(String mode) {
+        switch (mode) {
+            case "commit":
+                super.updateVmResources("commit");
+                vmGPUs -= allocatedGPUs;
+                break;
+            case "release":
+                super.updateVmResources("release");
+                vmGPUs += allocatedGPUs;
+                break;
+        }
+
+
+    }
+
+    @Override
+    protected void startWorkingOnProgram(Program prog) {
+        allocatedGPUs -= prog.getPGpu();
+        super.startWorkingOnProgram(prog);
+    }
+    @Override
+    protected void stopWorkingOnProgram(Program prog) {
+        allocatedGPUs += prog.getPGpu();
+        super.stopWorkingOnProgram(prog);
     }
 }

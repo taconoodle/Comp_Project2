@@ -4,6 +4,7 @@ import static globals.Globals.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.concurrent.*;
 
 public class Cluster {
     private int availableCPU;   //the amount of CPU cores that are available in the cluster
@@ -16,6 +17,7 @@ public class Cluster {
     private int vmIdCount;
     private ArrayList<Program> myProgs;
     private int numOfProgs;
+    private BoundedQueue<Program> queue;
 
     private int getAvailableCPU() {
         return availableCPU;
@@ -57,7 +59,7 @@ public class Cluster {
         this.availableBandwidth = availableBandwidth;
     }
 
-    private int getNumOfVMs() {
+    public int getNumOfVMs() {
         return numOfVMs;
     }
 
@@ -89,7 +91,7 @@ public class Cluster {
         this.myProgs = myProgs;
     }
 
-    private int getNumOfProgs() {
+    public int getNumOfProgs() {
         return numOfProgs;
     }
 
@@ -273,45 +275,49 @@ public class Cluster {
 
     private void updatePlainVM(int vmID, int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
+            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
+        System.out.println("Successfully updated VM.");
     }
 
     private void updateVmGPU(int vmID, int cores, double ram, String os, double diskSpace, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
+            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
+        System.out.println("Successfully updated VM.");
     }
 
     private void updateVmNetworked(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth <= MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
+            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
+        System.out.println("Successfully updated VM.");
     }
 
     private void updateVmNetworkedGPU(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
+            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
+        System.out.println("Successfully updated VM.");
     }
 
 
@@ -689,7 +695,7 @@ public class Cluster {
         int bandwidth = newIntegerInput();
         System.out.println("Please type in the expected execution time of the program in seconds?");
         int expectedTime = newIntegerInput();
-        createProgram(cores, ram, diskSpace, gpu, bandwidth, expectedTime);
+        createProgram(cores, ram, diskSpace, gpu, bandwidth, expectedTime * 1000);
     }//Lady, runnin' down to the riptide
 
     private void swap (ArrayList<Program> arr, int indx1, int indx2) {
@@ -706,5 +712,80 @@ public class Cluster {
                 }
             }
         }
+    }
+
+    public void initialProgramPushInQueue() {
+        queue = new BoundedQueue<Program>(numOfProgs);
+        for (Program prog : myProgs) {
+            queue.push(prog);
+        }
+    }
+
+    private VM findVMWithLowestLoad (ArrayList<VM> vmsToCheck) {
+        VM vmWithLowestLoad = vmsToCheck.get(0);
+        for (VM vm : vmsToCheck) {
+            if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
+                vmWithLowestLoad = vm;
+            }
+        }
+        return vmWithLowestLoad;
+    }
+
+    public void assignProgramsToVms() {
+        long timeToSleep = 2L;
+        TimeUnit time = TimeUnit.SECONDS;
+        while (!queue.isEmpty()) {
+            ArrayList<VM> possibleVMs = myVMs;  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
+            unassignFinishedPrograms();
+            while (true) {
+                if (possibleVMs.isEmpty()) {
+                    queue.peek().setAssignAttempts(queue.peek().getAssignAttempts() + 1);
+                    System.out.println("Program with ID " + queue.peek().getPID() + " was not able to be assigned to any VM to avoid overloading. Assignement attempts remaining: " + (MAX_ASSIGNMENT_ATTEMPTS - queue.peek().getAssignAttempts()));
+                    if (queue.peek().getAssignAttempts() != 3) {
+                        queue.push(queue.pop());
+                        try {
+                            time.sleep(timeToSleep);
+                        } catch (InterruptedException e) {
+                            System.out.println("Interrupted while executing the programs.");
+                        }
+                        break;
+                    }
+                    VM vmToUse = findVMWithLowestLoad(possibleVMs);
+                    if (vmToUse.getVmCores() < queue.peek().getPCores() || vmToUse.getVmRam() < queue.peek().getPRam() || vmToUse.getVmDiskSpace() < queue.peek().getPDiskSpace() || vmToUse.getVmGPUs() < queue.peek().getPGpu() || vmToUse.getVmBandwidth() < queue.peek().getPBandwidth()) {
+                        possibleVMs.remove(vmToUse);
+                    } else {
+                        vmToUse.startWorkingOnProgram(queue.pop());
+                        break;
+                    }
+                }
+            }
+
+        }
+        waitUntilProgsAreDone();
+    }
+
+    private void unassignFinishedPrograms() {
+        for (VM vm : myVMs) {
+            for(Program prog : vm.getWorkingOn()){
+                if (prog.getPExpectedTime() <= prog.getpExecTime()) {
+                    vm.stopWorkingOnProgram(prog);
+                    System.out.println("Program with ID " + prog.getPID() + " has finished executing and was deleted from the VM.");
+                }
+            }
+        }
+    }
+
+    private void waitUntilProgsAreDone() {
+        int vmsDone = 0;
+        while(!(vmsDone == numOfVMs)){
+            vmsDone = 0;
+            unassignFinishedPrograms();
+            for (VM vm : myVMs) {
+                if (vm.getWorkingOn().isEmpty()) {   //Adds up the number for every vm that does not have any Programs, so when that number is equal to the nubmer of the VMs, every Program is done
+                    vmsDone++;
+                }
+            }
+        }
+        System.out.println("\nAll programs are done executing.");
     }
 }

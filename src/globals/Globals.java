@@ -12,4 +12,5 @@ public class Globals {
         FEDORA
     }
     public static final float MIN_BANDWIDTH_PER_VM = 4;   //the minimum amount of bandwidth the VM should get
+    public static final int MAX_ASSIGNMENT_ATTEMPTS = 3;
 }
