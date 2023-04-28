@@ -2,12 +2,22 @@ package projectmanagerbackend;
 
 import globals.Globals;
 
-public class VmNetworkedGPU extends BaseVM{
+public class VmNetworkedGPU extends VmNetworked {
+
+    private int vmGPUs;
     protected VmNetworkedGPU(int id, int cores, double ram, Globals.OperatingSystems os, double diskSpace, double bandwidth, int gpus) {
-        super(id, cores, ram, os);
-        super.setVmDiskSpace(diskSpace);
-        super.setVmBandwidth(bandwidth);
-        super.setVmGPUs(gpus);
+        super(id, cores, ram, os, diskSpace, bandwidth);
+        vmGPUs = gpus;
+    }
+
+    @Override
+    public int getVmGPUs() {
+        return vmGPUs;
+    }
+
+    @Override
+    public void setVmGPUs(int vmGPUs) {
+        this.vmGPUs = vmGPUs;
     }
 
     @Override
@@ -28,13 +38,12 @@ public class VmNetworkedGPU extends BaseVM{
             super.setVmBandwidth((double) parameters[4]);   //fifth parameter should be the updated amount of bandwidth
         }
         if(parameters[5] != null) {
-            super.setVmGPUs((int) parameters[5]); //sixth parameter should be the updated amount of GPUs
+            vmGPUs = (int) parameters[5]; //sixth parameter should be the updated amount of GPUs
         }
     }
 
     @Override
     protected String displayResources() {
-        return "\tVM ID:\t" + getVmId() + "\tVM Cores:\t" + getVmCores() + "\tVM RAM:\t" + getVmRam() + "\tVM Disk Space:\t" + getVmDiskSpace() + "\tVM Bandwidth:\t"
-                + getVmBandwidth() + "\tVM GPUs:\t" + getVmGPUs();
+        return super.displayResources() + "\tVM GPUs: " + getVmGPUs();
     }
 }

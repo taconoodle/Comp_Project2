@@ -2,11 +2,21 @@ package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
 
-public class VmGPU extends BaseVM{
+public class VmGPU extends PlainVM {
+    private int vmGPUs;
     protected VmGPU (int id, int cores, double ram, OperatingSystems os, double diskSpace, int gpus) {
-        super(id, cores, ram, os);
-        super.setVmDiskSpace(diskSpace);
-        super.setVmGPUs(gpus);
+        super(id, cores, ram, os, diskSpace);
+        vmGPUs = gpus;
+    }
+
+    @Override
+    public int getVmGPUs() {
+        return vmGPUs;
+    }
+
+    @Override
+    public void setVmGPUs(int vmGPUs) {
+        this.vmGPUs = vmGPUs;
     }
 
     @Override
@@ -24,12 +34,12 @@ public class VmGPU extends BaseVM{
             super.setVmDiskSpace((double) parameters[3]);   //fourth parameter should be the updated disk space in the SSD allocated to the VM
         }
         if(parameters[4] != null) {
-            super.setVmGPUs((int) parameters[4]); //fifth parameter should be the updated amount of GPUs
+            vmGPUs = (int) parameters[4]; //fifth parameter should be the updated amount of GPUs
         }
     }
 
     @Override
     protected String displayResources() {
-        return "\tVM ID:\t" + getVmId() + "\tVM Cores:\t" + getVmCores() + "\tVM RAM:\t" + getVmRam() + "\tVM Disk Space:\t" + getVmDiskSpace() + "\tVM GPUs:\t" + getVmGPUs();
+        return super.displayResources() + "\tVM GPUs: " + vmGPUs;
     }
 }
