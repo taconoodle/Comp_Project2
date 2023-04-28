@@ -12,7 +12,7 @@ public class Cluster {
     private int availableGPU;   //the amount of GPUs available in the cluster
     private double availableBandwidth;   //the amount of Internet bandwidth that is free to utilize in GB/s
     private int numOfVMs; //how many VMs currently exist in the cluster
-    private ArrayList<BaseVM> myVMs; //a dynamic array containing all the VMs, using memory dynamically as VMs are created
+    private ArrayList<VM> myVMs; //a dynamic array containing all the VMs, using memory dynamically as VMs are created
     private int vmIdCount;
     private ArrayList<Program> myProgs;
     private int numOfProgs;
@@ -65,11 +65,11 @@ public class Cluster {
         this.numOfVMs = numOfVMs;
     }
 
-    private ArrayList<BaseVM> getMyVMs() {
+    private ArrayList<VM> getMyVMs() {
         return myVMs;
     }
 
-    private void setMyVMs(ArrayList<BaseVM> myVMs) {
+    private void setMyVMs(ArrayList<VM> myVMs) {
         this.myVMs = myVMs;
     }
 
@@ -186,7 +186,7 @@ public class Cluster {
         return -1;
     }
 
-    private BaseVM getVmById(int id) {
+    private VM getVmById(int id) {
         for (int i = 0; i < numOfVMs; i++) {
             if(myVMs.get(i).getVmId() == id) {
                 return myVMs.get(i);
@@ -195,21 +195,18 @@ public class Cluster {
         return myVMs.get(0);
     }
 
-    private int getVmType(BaseVM vm) {
-        if(vm instanceof VM) {
-            return 1;
-        }
-        else if(vm instanceof PlainVM) {
-            return 2;
-        }
-        else if(vm instanceof VmGPU) {
-            return 3;
-        }
-        else if (vm instanceof VmNetworked) {
+    private int getVmType(VM vm) {
+        if (vm instanceof VmNetworkedGPU) {
             return 4;
         }
+        else if (vm instanceof VmNetworked) {
+            return 3;
+        }
+        else if (vm instanceof VmGPU) {
+            return 2;
+        }
         else {
-            return 5;
+            return 1;
         }
     }
 
@@ -220,18 +217,6 @@ public class Cluster {
             }
         }
         return OperatingSystems.WINDOWS;
-    }
-
-    public void createVM(int cores, double ram, String os) { //Creates a new VM with only the basic functionality, after performing the necessary checks
-        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1) {
-            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
-        }
-        VM newVM = new VM(vmIdCount, cores, ram, getOS(os));
-        myVMs.add(newVM);
-        numOfVMs++;
-        updateResources(cores, ram);
-        System.out.println("Successfully added new VM with ID " + vmIdCount +".");
-        vmIdCount++;
     }
 
     private void createPlainVM(int cores, double ram, String os, double diskSpace) {
@@ -285,15 +270,6 @@ public class Cluster {
         vmIdCount++;
     }
 
-    private void updateVM(int vmID, int cores, double ram, String os) {
-        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID" + vmID + ". Values given are not valid or there are not enough resources.");
-            return;
-        }
-        addResources(myVMs.get(vmID).getVmCores(),myVMs.get(vmID).getVmRam());
-        myVMs.get(vmID).updateVM(cores, ram, getOS(os));
-        updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam());
-    }
 
     private void updatePlainVM(int vmID, int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) || osExists(os) == -1) {
@@ -338,16 +314,7 @@ public class Cluster {
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
     }
 
-    private void deleteVM(int vmID) {
-        if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
-            return;
-        }
-        addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam());
-        myVMs.remove(myVMs.get(findVmById(vmID)));
-        numOfVMs--;
-        System.out.println("VM successfully deleted.");
-    }
+
     private void deletePlainVM(int vmID) {
         if (findVmById(vmID) == -1) {
             System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
@@ -398,7 +365,7 @@ public class Cluster {
     }
 
     public void displayAllVmResources() {
-        for (BaseVM vm : myVMs) {
+        for (VM vm : myVMs) {
             System.out.println(vm.displayResources());
         }
     }
@@ -452,9 +419,9 @@ public class Cluster {
     }
 
     private void createVmMenu() {
-        System.out.println("Please choose the type of VM you wish to create:\n1. VM with only CPU, RAM and OS.\n2. VM with CPU, RAM, OS and SSD space.\n" +
-                "3. VM with CPU, RAM, OS, SSD space and GPU(s).\n4. VM with CPU, RAM, OS, SSD space and Internet Bandwidth.\n" +
-                "5. VM with CPU, RAM, OS, SSD space, Internet Bandwidth and GPU(s).");
+        System.out.println("Please choose the type of VM you wish to create:\n1. VM with CPU, RAM, OS and SSD space.\n" +
+                "2. VM with CPU, RAM, OS, SSD space and GPU(s).\n3. VM with CPU, RAM, OS, SSD space and Internet Bandwidth.\n" +
+                "4. VM with CPU, RAM, OS, SSD space, Internet Bandwidth and GPU(s).");
                 Scanner newScan = new Scanner(System.in);
         switch (getChoice()) {
             case 1:
@@ -464,20 +431,11 @@ public class Cluster {
                 double vmRam = newDoubleInput();
                 System.out.println("Please type in the name of the OS you wish to use with the VM.");
                 String vmOs = newScan.next();
-                createVM(vmCores, vmRam, vmOs);
-                break;
-            case 2:
-                System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
                 System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
                 double vmDiskSpace = newDoubleInput();
                 createPlainVM(vmCores, vmRam, vmOs, vmDiskSpace);
                 break;
-            case 3:
+            case 2:
                 System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
                 vmCores = newIntegerInput();
                 System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
@@ -490,7 +448,7 @@ public class Cluster {
                 int vmGpus = newIntegerInput();
                 createVmGPU(vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
                 break;
-            case 4:
+            case 3:
                 System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
                 vmCores = newIntegerInput();
                 System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
@@ -503,7 +461,7 @@ public class Cluster {
                 double vmBandwidth = newDoubleInput();
                 createVmNetworked(vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
                 break;
-            case 5:
+            case 4:
                 System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
                 vmCores = newIntegerInput();
                 System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
@@ -539,22 +497,13 @@ public class Cluster {
                 int vmCores = newIntegerInput();
                 System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
                 double vmRam = newDoubleInput();
-                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
-                String vmOs = newScan.next();
-                updateVM(id, vmCores, vmRam, vmOs);
-                break;
-            case 2:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
                 System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
+                String vmOs = newScan.next();
                 System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
                 double vmDiskSpace = newDoubleInput();
                 updatePlainVM(id, vmCores, vmRam, vmOs, vmDiskSpace);
                 break;
-            case 3:
+            case 2:
                 System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
                 vmCores = newIntegerInput();
                 System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
@@ -567,7 +516,7 @@ public class Cluster {
                 int vmGpus = newIntegerInput();
                 updateVmGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
                 break;
-            case 4:
+            case 3:
                 System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
                 vmCores = newIntegerInput();
                 System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
@@ -580,7 +529,7 @@ public class Cluster {
                 double vmBandwidth = newDoubleInput();
                 updateVmNetworked(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
                 break;
-            case 5:
+            case 4:
                 System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
                 vmCores = newIntegerInput();
                 System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
@@ -638,7 +587,7 @@ public class Cluster {
                 if (!deletionChoice.equals("Y")) {
                     return;
                 }
-                deleteVM(id);
+                deletePlainVM(id);
                 break;
             case 2:
                 System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
@@ -646,17 +595,9 @@ public class Cluster {
                 if (!deletionChoice.equals("Y")) {
                     return;
                 }
-                deletePlainVM(id);
-                break;
-            case 3:
-                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
-                deletionChoice = newScan.next().toUpperCase();
-                if (!deletionChoice.equals("Y")) {
-                    return;
-                }
                 deleteVmGPU(id);
                 break;
-            case 4:
+            case 3:
                 System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to  or anything else to cancel.");
                 deletionChoice = newScan.next().toUpperCase();
                 if (!deletionChoice.equals("Y")) {
@@ -664,7 +605,7 @@ public class Cluster {
                 }
                 deleteVmNetworked(id);
                 break;
-            case 5:
+            case 4:
                 System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
                 deletionChoice = newScan.next().toUpperCase();
                 if (!deletionChoice.equals("Y")) {

@@ -2,11 +2,22 @@ package projectmanagerbackend;
 
 import globals.Globals;
 
-public class VmNetworked extends BaseVM{
+public class VmNetworked extends PlainVM {
+    private double vmBandwidth;
+
     protected VmNetworked(int id, int cores, double ram, Globals.OperatingSystems os, double diskSpace, double bandwidth) {
-        super(id, cores, ram, os);
-        super.setVmDiskSpace(diskSpace);
-        super.setVmBandwidth(bandwidth);
+        super(id, cores, ram, os, diskSpace);
+        vmBandwidth = bandwidth;
+    }
+
+    @Override
+    public double getVmBandwidth() {
+        return vmBandwidth;
+    }
+
+    @Override
+    public void setVmBandwidth(double vmBandwidth) {
+        this.vmBandwidth = vmBandwidth;
     }
 
     @Override
@@ -24,12 +35,12 @@ public class VmNetworked extends BaseVM{
             super.setVmDiskSpace((double) parameters[3]);   //fourth parameter should be the updated disk space in the SSD allocated to the VM
         }
         if(parameters[4] != null) {
-            super.setVmBandwidth((double) parameters[4]);   //fifth parameter should be the updated amount of bandwidth
+            vmBandwidth = (double) parameters[4];   //fifth parameter should be the updated amount of bandwidth
         }
     }
 
     @Override
     protected String displayResources() {
-        return "\tVM ID:\t" + getVmId() + "\tVM Cores:\t" + getVmCores() + "\tVM RAM:\t" + getVmRam() + "\tVM Disk Space:\t" + getVmDiskSpace() + "\tVM Bandwidth:\t" + getVmBandwidth();
+        return super.displayResources() + "\tVM Bandwidth: " + vmBandwidth + " GB/s";
     }
 }

@@ -2,10 +2,42 @@ package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
 
-public class PlainVM extends BaseVM{
+public class PlainVM extends VM {
+    private double vmDiskSpace;
     protected PlainVM(int id, int cores, double ram, OperatingSystems os, double diskSpace) {
         super(id, cores, ram, os);
-        super.setVmDiskSpace(diskSpace);
+        vmDiskSpace = diskSpace;
+    }
+
+    @Override
+    public double getVmDiskSpace() {
+        return vmDiskSpace;
+    }
+
+
+    @Override
+    public void setVmDiskSpace(double vmDiskSpace) {
+        this.vmDiskSpace = vmDiskSpace;
+    }
+
+    @Override
+    protected int getVmGPUs() {
+        return 0;
+    }
+
+    @Override
+    protected void setVmGPUs(int vmGPUs) {
+
+    }
+
+    @Override
+    protected double getVmBandwidth() {
+        return 0;
+    }
+
+    @Override
+    protected void setVmBandwidth(double vmBandwidth) {
+
     }
 
     @Override
@@ -20,12 +52,12 @@ public class PlainVM extends BaseVM{
             super.setVmOS((OperatingSystems) parameters[2]);  //third parameter should be the updated OS
         }
         if(parameters[3] != null) {
-            super.setVmDiskSpace((double) parameters[3]);   //fourth parameter should be the updated disk space in the SSD allocated to the VM
+            vmDiskSpace = (double) parameters[3];   //fourth parameter should be the updated disk space in the SSD allocated to the VM
         }
     }
 
     @Override
     protected String displayResources() {
-        return "\tVM ID:\t" + getVmId() + "\tVM Cores:\t" + getVmCores() + "\tVM RAM:\t" + getVmRam() + "\tVM Disk Space:\t" + getVmDiskSpace();
+        return "\tVM ID: " + getVmId() + "\tVM Cores: " + getVmCores() + "\tVM RAM: " + getVmRam() + " GB" + "\tVM Disk Space: " + vmDiskSpace + " GB";
     }
 }
