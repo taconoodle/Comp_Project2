@@ -734,45 +734,65 @@ public class Cluster {
     }
 
     public void assignProgramsToVms() throws IOException {
-        long timeToSleep = 2L;
-        TimeUnit time = TimeUnit.SECONDS;
         while (!queue.isEmpty()) {
-            ArrayList<VM> possibleVMs = myVMs;  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
-            unassignFinishedPrograms();
-            while (true) {
-                if (possibleVMs.isEmpty()) {
-                    queue.peek().setAssignAttempts(queue.peek().getAssignAttempts() + 1);
-                    System.out.println("Program with ID " + queue.peek().getPID() + " was not able to be assigned to any VM to avoid overloading. Assignement attempts remaining: " + (MAX_ASSIGNMENT_ATTEMPTS - queue.peek().getAssignAttempts()));
-                    if (queue.peek().getAssignAttempts() == 3) {
-                        saveFailedProgram(queue.pop());
-                    }
-                    else {
-                        queue.push(queue.pop());
-                        try {
-                            time.sleep(timeToSleep);
-                        } catch (InterruptedException e) {
-                            System.out.println("Interrupted while executing the programs.");
-                        }
-                        break;
-                    }
-                    VM vmToUse = findVMWithLowestLoad(possibleVMs);
-                    if (vmToUse.getVmCores() < queue.peek().getPCores() || vmToUse.getVmRam() < queue.peek().getPRam() || vmToUse.getVmDiskSpace() < queue.peek().getPDiskSpace() || vmToUse.getVmGPUs() < queue.peek().getPGpu() || vmToUse.getVmBandwidth() < queue.peek().getPBandwidth()) {
-                        possibleVMs.remove(vmToUse);
-                    } else {
-                        vmToUse.startWorkingOnProgram(queue.pop());
-                        break;
-                    }
-                }
-            }
-
+            findVmToAssignProject();
         }
         waitUntilProgsAreDone();
     }
 
+    private void findVmToAssignProject() throws IOException {
+        ArrayList<VM> possibleVMs = myVMs;  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
+        unassignFinishedPrograms();
+        while (true) {
+            if (possibleVMs.isEmpty()) {
+                programAssignementFailed();
+                break;
+            }
+            VM vmToUse = findVMWithLowestLoad(possibleVMs);
+            if (assignProgramToVm(vmToUse)){
+                break;
+            }
+            possibleVMs.remove(vmToUse);
+        }
+    }
+
+    private void programAssignementFailed() throws IOException {
+        long timeToSleep = 2L;
+        TimeUnit time = TimeUnit.SECONDS;
+
+        queue.peek().setAssignAttempts(queue.peek().getAssignAttempts() + 1);
+        System.out.println("Program with ID " + queue.peek().getPID() + " was not able to be assigned to any VM to avoid overloading. Assignement attempts remaining: " + (MAX_ASSIGNMENT_ATTEMPTS - queue.peek().getAssignAttempts()));
+
+        if (queue.peek().getAssignAttempts() == 3) {
+            saveFailedProgram(queue.pop());
+        } else {
+            Program temp = queue.pop();
+            queue.push(temp);
+            try {
+                time.sleep(timeToSleep);
+            } catch (InterruptedException e) {
+                System.out.println("Interrupted while executing the programs.");
+            }
+        }
+    }
+
+    private boolean assignProgramToVm(VM vm) {
+        if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() || vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
+            return false;
+        }
+        else {
+            vm.startWorkingOnProgram(queue.pop());
+            return true;
+        }
+    }
+
     private void unassignFinishedPrograms() {
+
         for (VM vm : myVMs) {
             for(Program prog : vm.getWorkingOn()){
-                if (prog.getPExpectedTime() <= prog.getpExecTime()) {
+                prog.setCurrentExecTime(System.currentTimeMillis());
+                prog.setPExecTime(prog.getCurrentExecTime() - prog.getPStartExecTime());
+                if (prog.getPExpectedTime() <= prog.getPExecTime()) {
                     vm.stopWorkingOnProgram(prog);
                     System.out.println("Program with ID " + prog.getPID() + " has finished executing and was deleted from the VM.");
                 }
@@ -782,11 +802,10 @@ public class Cluster {
 
     private void waitUntilProgsAreDone() {
         int vmsDone = 0;
-        while(!(vmsDone == numOfVMs)){
-            vmsDone = 0;
+        while(vmsDone != numOfVMs){
             unassignFinishedPrograms();
             for (VM vm : myVMs) {
-                if (vm.getWorkingOn().isEmpty()) {   //Adds up the number for every vm that does not have any Programs, so when that number is equal to the nubmer of the VMs, every Program is done
+                if (vm.getWorkingOn().size() == 0) {   //Adds up the number for every vm that does not have any Programs, so when that number is equal to the nubmer of the VMs, every Program is done
                     vmsDone++;
                 }
             }
@@ -795,9 +814,15 @@ public class Cluster {
     }
 
     private void saveFailedProgram(Program prog) throws IOException {
-        FileOutputStream fout = new FileOutputStream("./log/rejected.out");
+        File log = new File("log");
+        if (!log.exists()) {
+            log.mkdir();
+        }
+        FileOutputStream fout = new FileOutputStream("log/rejected.out");
         ObjectOutputStream out = new ObjectOutputStream(fout);
         out.writeObject(prog);
         out.flush();
+        out.close();
+        System.out.println("Program with ID " + prog.getPID() + " failed. A log was saved in: log/rejected.out");
     }
 }

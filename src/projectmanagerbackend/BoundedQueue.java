@@ -31,6 +31,7 @@ public class BoundedQueue<E> {
         }
         E e = peek();
         head = (head + 1) % data.length;
+        size -= 1;
         return e;
     }
 

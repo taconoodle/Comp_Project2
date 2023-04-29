@@ -1,15 +1,16 @@
 package projectmanagerbackend;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Program {
+public class Program implements Serializable {
     private int pID;
     private int pCores;
     private int pRam;
     private int pDiskSpace;
     private int pGpu;
     private int pBandwidth;
-    private int pExpectedTime;
+    private long pExpectedTime;
     private long pExecTime;
     private long pStartExecTime;
     private long currentExecTime;
@@ -80,13 +81,10 @@ public class Program {
         this.pBandwidth = pBandwidth;
     }
 
-    protected int getPExpectedTime() {
+    protected long getPExpectedTime() {
         return pExpectedTime;
     }
 
-    private void setPExpectedTime(int pExpectedTime) {
-        this.pExpectedTime = pExpectedTime;
-    }
 
     protected double getPPriority() {
         return pPriority;
@@ -96,35 +94,32 @@ public class Program {
         this.pPriority = pPriority;
     }
 
-    protected int getpExpectedTime() {
-        return pExpectedTime;
-    }
 
-    public void setpExpectedTime(int pExpectedTime) {
+    public void setPExpectedTime(long pExpectedTime) {
         this.pExpectedTime = pExpectedTime;
     }
 
-    protected long getpExecTime() {
-        return currentExecTime - pStartExecTime;
+    protected long getPExecTime() {
+        return pExecTime;
     }
 
-    public void setpExecTime(long pExecTime) {
+    public void setPExecTime(long pExecTime) {
         this.pExecTime = pExecTime;
     }
 
-    protected long getpStartExecTime() {
+    protected long getPStartExecTime() {
         return pStartExecTime;
     }
 
-    public void setpStartExecTime(long pStartExecTime) {
+    public void setPStartExecTime(long pStartExecTime) {
         this.pStartExecTime = pStartExecTime;
     }
 
     protected long getCurrentExecTime() {
-        return System.currentTimeMillis();
+        return currentExecTime;
     }
 
-    public void setCurrentExecTime(int currentExecTime) {
+    public void setCurrentExecTime(long currentExecTime) {
         this.currentExecTime = currentExecTime;
     }
 

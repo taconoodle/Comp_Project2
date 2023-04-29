@@ -2,8 +2,10 @@ package projectmanagerfrontend;
 
 import projectmanagerbackend.*;
 
+import java.io.IOException;
+
 public class ProjectCLI {
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         Cluster cluster = new Cluster();
         System.out.println ("Cluster initialized.\nThere are 128 CPU cores, 256 GB RAM, 2048 GB of SSD space, 8 GPUs and 320 GB/s Internet Bandwidth available." +
                 " The supported OSes are Windows, Ubuntu and Fedora.");
@@ -45,5 +47,6 @@ public class ProjectCLI {
 
         System.out.println("\nProgram creation completed. Moving to Program execution:");
         cluster.initialProgramPushInQueue();
+        cluster.assignProgramsToVms();
     }
 }

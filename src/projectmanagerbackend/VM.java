@@ -155,7 +155,7 @@ public abstract class VM {
     protected abstract void updateVmResources(String mode);
 
     protected void startWorkingOnProgram(Program prog) {
-        prog.setpStartExecTime(System.currentTimeMillis());
+        prog.setPStartExecTime(System.currentTimeMillis());
         allocatedCores += prog.getPCores();
         allocatedRam += prog.getPRam();
         workingOn.add(prog);
