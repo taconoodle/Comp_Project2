@@ -720,14 +720,14 @@ public class Cluster {
         }
     }
 
-    public void initialProgramPushInQueue() {
+    public void initialProgramPushInQueue() {   //pushes all the programs in a queue
         queue = new BoundedQueue<Program>(numOfProgs);
         for (Program prog : myProgs) {
             queue.push(prog);
         }
     }
 
-    private VM findVMWithLowestLoad (ArrayList<VM> vmsToCheck) {
+    private VM findVMWithLowestLoad (ArrayList<VM> vmsToCheck) {    //checks all the VMs to find the one with the lowest load
         VM vmWithLowestLoad = vmsToCheck.get(0);
         for (VM vm : vmsToCheck) {
             if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
@@ -737,14 +737,14 @@ public class Cluster {
         return vmWithLowestLoad;
     }
 
-    public void assignProgramsToVms() throws IOException, InterruptedException {
+    public void assignProgramsToVms() throws IOException, InterruptedException {    //assigns the programs in the queue to the appropriate VMs until all the programs are removed from the queue
         while (!queue.isEmpty()) {
             findVmToAssignProject();
         }
         waitUntilProgsAreDone();
     }
 
-    private void findVmToAssignProject() throws IOException {
+    private void findVmToAssignProject() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
         ArrayList<VM> possibleVMs = new ArrayList<>(myVMs);  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
             unassignFinishedPrograms();
@@ -753,14 +753,14 @@ public class Cluster {
                 break;
             }
             VM vmToUse = findVMWithLowestLoad(possibleVMs);
-            if (assignProgramToVm(vmToUse)){
+            if (attemptAssignProgramToVm(vmToUse)){
                 break;
             }
             possibleVMs.remove(vmToUse);
         }
     }
 
-    private void programAssignementFailed() throws IOException {
+    private void programAssignementFailed() throws IOException {    //runs when a program is unable to be assigned to any VM
         long timeToSleep = 2L;
         TimeUnit time = TimeUnit.SECONDS;
 
@@ -780,7 +780,7 @@ public class Cluster {
         }
     }
 
-    private boolean assignProgramToVm(VM vm) {
+    private boolean attemptAssignProgramToVm(VM vm) {  //attempts to assign the program to the passed in VM
         if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() || vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
             return false;
         }
@@ -790,7 +790,7 @@ public class Cluster {
         }
     }
 
-    private void unassignFinishedPrograms() {
+    private void unassignFinishedPrograms() {   //checks every VM to find if any programs have finished executing and then deletes them from that VM
         for (VM vm : myVMs) {
             ArrayList<Program> workingOnCopy= new ArrayList<Program>(vm.getWorkingOn());
             for(Program prog : workingOnCopy){
@@ -804,7 +804,7 @@ public class Cluster {
         }
     }
 
-    private void waitUntilProgsAreDone() throws InterruptedException {
+    private void waitUntilProgsAreDone() throws InterruptedException {  //waits until all the programs that have been passed to VMs are done executing
         long timeToSleep = 1L;
         TimeUnit time = TimeUnit.SECONDS;
         int vmsDone = 0;
@@ -820,7 +820,7 @@ public class Cluster {
         System.out.println("\nAll programs are done executing.");
     }
 
-    private void saveFailedProgram(Program prog) throws IOException {
+    private void saveFailedProgram(Program prog) throws IOException {   //runs when a program has failed 3 times. Saves the serialized program in a file
         File log = new File("log");
         if (!log.exists()) {
             log.mkdir();
