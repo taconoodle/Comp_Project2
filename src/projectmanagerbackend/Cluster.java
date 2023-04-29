@@ -738,6 +738,8 @@ public class Cluster {
     }
 
     public void assignProgramsToVms() throws IOException, InterruptedException {    //assigns the programs in the queue to the appropriate VMs until all the programs are removed from the queue
+        File file = new File("log/rejected.out");
+        file.delete();
         while (!queue.isEmpty()) {
             findVmToAssignProject();
         }
@@ -763,13 +765,13 @@ public class Cluster {
     private void programAssignementFailed() throws IOException {    //runs when a program is unable to be assigned to any VM
         long timeToSleep = 2L;
         TimeUnit time = TimeUnit.SECONDS;
-
         queue.peek().setAssignAttempts(queue.peek().getAssignAttempts() + 1);
         System.out.println("Program with ID " + queue.peek().getPID() + " was not able to be assigned to any VM to avoid overloading. Assignement attempts remaining: " + (MAX_ASSIGNMENT_ATTEMPTS - queue.peek().getAssignAttempts()));
 
         if (queue.peek().getAssignAttempts() == 3) {
             saveFailedProgram(queue.pop());
-        } else {
+        }
+        else {
             Program temp = queue.pop();
             queue.push(temp);
             try {
@@ -808,7 +810,9 @@ public class Cluster {
         long timeToSleep = 1L;
         TimeUnit time = TimeUnit.SECONDS;
         int vmsDone = 0;
+
         while(vmsDone != numOfVMs){
+            vmsDone = 0;
             unassignFinishedPrograms();
             for (VM vm : myVMs) {
                 if (vm.getNumOfProgsInVm() == 0) {   //Adds up the number for every vm that does not have any Programs, so when that number is equal to the nubmer of the VMs, every Program is done
@@ -825,7 +829,7 @@ public class Cluster {
         if (!log.exists()) {
             log.mkdir();
         }
-        FileOutputStream fout = new FileOutputStream("log/rejected.out");
+        FileOutputStream fout = new FileOutputStream("log/rejected.out", true);
         ObjectOutputStream out = new ObjectOutputStream(fout);
         out.writeObject(prog);
         out.flush();

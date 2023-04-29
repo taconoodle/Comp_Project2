@@ -46,6 +46,7 @@ public class ProjectCLI {
         }
 
         System.out.println("\nProgram creation completed. Moving to Program execution:");
+
         cluster.initialProgramPushInQueue();
         cluster.assignProgramsToVms();
     }
