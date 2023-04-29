@@ -226,6 +226,7 @@ public class Cluster {
     private void createPlainVM(int cores, double ram, String os, double diskSpace) {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+            return;
         }
         PlainVM newVM = new PlainVM(vmIdCount, cores, ram, getOS(os), diskSpace);
         myVMs.add(newVM);
@@ -239,6 +240,7 @@ public class Cluster {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+            return;
         }
         VmGPU newVM = new VmGPU (vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
         myVMs.add(newVM);
@@ -252,6 +254,7 @@ public class Cluster {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+            return;
         }
         VmNetworked newVM = new VmNetworked(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth);
         myVMs.add(newVM);
@@ -265,6 +268,7 @@ public class Cluster {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+            return;
         }
         VmNetworkedGPU newVM = new VmNetworkedGPU(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         myVMs.add(newVM);
@@ -733,7 +737,7 @@ public class Cluster {
         return vmWithLowestLoad;
     }
 
-    public void assignProgramsToVms() throws IOException {
+    public void assignProgramsToVms() throws IOException, InterruptedException {
         while (!queue.isEmpty()) {
             findVmToAssignProject();
         }
@@ -741,9 +745,9 @@ public class Cluster {
     }
 
     private void findVmToAssignProject() throws IOException {
-        ArrayList<VM> possibleVMs = myVMs;  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
-        unassignFinishedPrograms();
+        ArrayList<VM> possibleVMs = new ArrayList<>(myVMs);  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
+            unassignFinishedPrograms();
             if (possibleVMs.isEmpty()) {
                 programAssignementFailed();
                 break;
@@ -787,9 +791,9 @@ public class Cluster {
     }
 
     private void unassignFinishedPrograms() {
-
         for (VM vm : myVMs) {
-            for(Program prog : vm.getWorkingOn()){
+            ArrayList<Program> workingOnCopy= new ArrayList<Program>(vm.getWorkingOn());
+            for(Program prog : workingOnCopy){
                 prog.setCurrentExecTime(System.currentTimeMillis());
                 prog.setPExecTime(prog.getCurrentExecTime() - prog.getPStartExecTime());
                 if (prog.getPExpectedTime() <= prog.getPExecTime()) {
@@ -800,15 +804,18 @@ public class Cluster {
         }
     }
 
-    private void waitUntilProgsAreDone() {
+    private void waitUntilProgsAreDone() throws InterruptedException {
+        long timeToSleep = 1L;
+        TimeUnit time = TimeUnit.SECONDS;
         int vmsDone = 0;
         while(vmsDone != numOfVMs){
             unassignFinishedPrograms();
             for (VM vm : myVMs) {
-                if (vm.getWorkingOn().size() == 0) {   //Adds up the number for every vm that does not have any Programs, so when that number is equal to the nubmer of the VMs, every Program is done
+                if (vm.getNumOfProgsInVm() == 0) {   //Adds up the number for every vm that does not have any Programs, so when that number is equal to the nubmer of the VMs, every Program is done
                     vmsDone++;
                 }
             }
+            time.sleep(timeToSleep);
         }
         System.out.println("\nAll programs are done executing.");
     }
