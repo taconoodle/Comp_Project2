@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.concurrent.*;
+import java.util.Properties;
 
 public class Cluster {
     private int availableCPU;   //the amount of CPU cores that are available in the cluster
@@ -836,4 +837,6 @@ public class Cluster {
         out.close();
         System.out.println("Program with ID " + prog.getPID() + " failed. A log was saved in: log/rejected.out");
     }
+
+
 }
