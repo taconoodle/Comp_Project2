@@ -3,6 +3,8 @@ package projectmanagerbackend;
 import java.io.Serializable;
 import java.util.Random;
 
+import static globals.Globals.AMOUNT_OF_CPU;
+
 public class Program implements Serializable {
     private int pID;
     private int pCores;
@@ -19,7 +21,7 @@ public class Program implements Serializable {
 
     protected Program(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime, double priority) {
         Random newRandom = new Random();
-        pID = newRandom.nextInt(Integer.MAX_VALUE) + 1;
+        pID = newRandom.nextInt(AMOUNT_OF_CPU) + 1;
         pCores = cores;
         pRam = ram;
         pDiskSpace = diskSpace;

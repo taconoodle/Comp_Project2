@@ -115,10 +115,6 @@ public class Cluster {
         myProgs = new ArrayList<>(1);
     }
 
-    private void updateResources(int cores, double ram) {
-        availableCPU -= cores;
-        availableRAM -= ram;
-    }
     private void updateResources(int cores, double ram, double diskSpace) {
         availableCPU -= cores;
         availableRAM -= ram;
@@ -144,10 +140,6 @@ public class Cluster {
         availableGPU -= gpus;
     }
 
-    private void addResources(int cores, double ram) {
-        availableCPU += cores;
-        availableRAM += ram;
-    }
     private void addResources(int cores, double ram, double diskSpace) {
         availableCPU += cores;
         availableRAM += ram;
@@ -224,10 +216,10 @@ public class Cluster {
         return OperatingSystems.WINDOWS;
     }
 
-    private void createPlainVM(int cores, double ram, String os, double diskSpace) {
+    private boolean createPlainVM(int cores, double ram, String os, double diskSpace) {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
-            return;
+            return false;
         }
         PlainVM newVM = new PlainVM(vmIdCount, cores, ram, getOS(os), diskSpace);
         myVMs.add(newVM);
@@ -235,13 +227,14 @@ public class Cluster {
         updateResources(cores, ram, diskSpace);
         System.out.println("Successfully added new Plain VM with ID " + vmIdCount +".");
         vmIdCount++;
+        return true;
     }
 
-    private void createVmGPU (int cores, double ram, String os, double diskSpace, int gpus) {
+    private boolean createVmGPU (int cores, double ram, String os, double diskSpace, int gpus) {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
-            return;
+            return false;
         }
         VmGPU newVM = new VmGPU (vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
         myVMs.add(newVM);
@@ -249,13 +242,14 @@ public class Cluster {
         updateResources(cores, ram, diskSpace, gpus);
         System.out.println ("Successfully added new VM with GPU with ID " + vmIdCount +".");
         vmIdCount++;
+        return true;
     }
 
-    private void createVmNetworked (int cores, double ram, String os, double diskSpace, double bandwidth) {
+    private boolean createVmNetworked (int cores, double ram, String os, double diskSpace, double bandwidth) {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
-            return;
+            return false;
         }
         VmNetworked newVM = new VmNetworked(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth);
         myVMs.add(newVM);
@@ -263,13 +257,14 @@ public class Cluster {
         updateResources(cores, ram, diskSpace, bandwidth);
         System.out.println("Successfully added new networked VM with ID " + vmIdCount +".");
         vmIdCount++;
+        return true;
     }
 
-    private void createVmNetworkedGPU (int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
+    private boolean createVmNetworkedGPU (int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
         if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU)) {
             System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
-            return;
+            return false;
         }
         VmNetworkedGPU newVM = new VmNetworkedGPU(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         myVMs.add(newVM);
@@ -277,6 +272,7 @@ public class Cluster {
         updateResources(cores, ram, diskSpace, bandwidth, gpus);
         System.out.println("Successfully added new networked VM with GPU with ID " + vmIdCount +".");
         vmIdCount++;
+        return true;
     }
 
 
@@ -652,17 +648,18 @@ public class Cluster {
         displayVmResources(id);
     }
 
-    private void createProgram(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime) {
+    private boolean createProgram(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime) {
         double[] totalResources = calculateTotalResources();
         if((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
                 (bandwidth < 0 || bandwidth > totalResources[4]) || expectedTime <= 0) {
             System.out.println("\nSystem error: Invalid values or not enough VMs to support to execute the program.");
-            return;
+            return false;
         }
         Program newProg = new Program(cores, ram, diskSpace, gpu, bandwidth, expectedTime, calculateProgramPriority(totalResources, cores, ram, diskSpace, gpu, bandwidth));
         myProgs.add(newProg);
         numOfProgs++;
         System.out.println("\nSuccessfully added new Program with ID: " + newProg.getPID() + ".");
+        return true;
     }
 
     private double calculateProgramPriority(double[] resources, int cores, int ram, int diskSpace, int gpu, int bandwidth) {
@@ -838,5 +835,96 @@ public class Cluster {
         System.out.println("Program with ID " + prog.getPID() + " failed. A log was saved in: log/rejected.out");
     }
 
+    public boolean createVMsFromConfig() throws IOException {     //CREATE THE FILE DIR
+        BufferedReader reader = new BufferedReader(new FileReader("cfg/vms.config"));
+        String vmLine = null;
+        boolean vmCreated = false;
+        while ((vmLine = reader.readLine()) != null) {
+            Properties props = new Properties();
+            String[] allResources = vmLine.split(","); //0: os, 1: cores, 2:ram, 3: ssd, 4: bandwidth/gpu, 5: gpu(if exists)
+            for (String resource : allResources) {
+                String resourceName = resource.split(":")[0].trim();
+                props.setProperty(resourceName, resource.split(":")[1].trim());
+            }
 
+            int cores = 0, gpu = 0;
+            double ram = 0, ssd = 0, bandwidth = 0;
+            String os = props.getProperty("os");
+            String coresStr = props.getProperty("cores");
+            String ramStr = props.getProperty("ram");
+            String ssdStr = props.getProperty("ssd");
+            String bandwidthStr = props.getProperty("bandwidth");   //returns null if not found
+            String gpuStr = props.getProperty("gpu");   //returns null if not found
+            if(coresStr != null && ramStr != null && ssdStr != null) {
+                cores = Integer.parseInt(coresStr);
+                ram = Double.parseDouble(ramStr);
+                ssd = Double.parseDouble(ssdStr);
+            }
+            if(bandwidthStr != null) {
+                bandwidth = Double.parseDouble(bandwidthStr);
+            }
+            if(gpuStr != null) {
+                gpu = Integer.parseInt(gpuStr);
+            }
+            if(bandwidth == 0 && gpu == 0) {
+                if(createPlainVM(cores, ram, os, ssd)) {
+                    vmCreated = true;
+                }
+            }
+            else if(bandwidth != 0 && gpu == 0) {
+                if(createVmNetworked(cores, ram, os, ssd, bandwidth)) {
+                    vmCreated = true;
+                }
+            }
+            else if(bandwidth == 0 && gpu != 0) {
+                if(createVmGPU(cores, ram, os, ssd, gpu)) {
+                    vmCreated = true;
+                }
+            }
+            else if(bandwidth != 0 && gpu != 0) {
+                if(createVmNetworkedGPU(cores, ram, os, ssd, bandwidth, gpu)) {
+                    vmCreated = true;
+                }
+            }
+        }
+        return vmCreated;
+    }
+
+    public boolean createProgsFromConfig() throws IOException {
+        String progLine = null;
+        BufferedReader reader = new BufferedReader(new FileReader("cfg/programs.config"));
+        boolean programCreated = false;
+        while((progLine = reader.readLine()) != null) {
+            Properties props = new Properties();
+            String[] allResources = progLine.split(",");
+            for (String resource : allResources) {
+                String resourceName = resource.split(":")[0].trim();
+                props.setProperty(resourceName, resource.split(":")[1].trim());
+            }
+
+            int cores = 0, gpu = 0, time = 0, ram = 0, ssd = 0, bandwidth = 0;
+            String coresStr = props.getProperty("cores");
+            String ramStr = props.getProperty("ram");
+            String ssdStr = props.getProperty("ssd");
+            String bandwidthStr = props.getProperty("bandwidth");   //returns null if not found
+            String gpuStr = props.getProperty("gpu");   //returns null if not found
+            String timeStr = props.getProperty("time");
+            if(coresStr != null && ramStr != null && ssdStr != null && timeStr != null) {
+                cores = Integer.parseInt(coresStr);
+                ram = Integer.parseInt(ramStr);
+                ssd = Integer.parseInt(ssdStr);
+                time = Integer.parseInt(timeStr);
+            }
+            if(bandwidthStr != null) {
+                bandwidth = Integer.parseInt(bandwidthStr);
+            }
+            if(gpuStr != null) {
+                gpu = Integer.parseInt(gpuStr);
+            }
+            if(createProgram(cores, ram, ssd, gpu, bandwidth, time)) {
+                programCreated = true;
+            }
+        }
+        return programCreated;
+    }
 }
