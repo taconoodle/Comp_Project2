@@ -466,7 +466,7 @@ public class Cluster {
                 vmOs = newScan.next();
                 System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
                 vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the amount of GB/s this VM can use.");
+                System.out.println("Please type int the amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
                 double vmBandwidth = newDoubleInput();
                 createVmNetworked(vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
                 break;
@@ -479,9 +479,9 @@ public class Cluster {
                 vmOs = newScan.next();
                 System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
                 vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the amount of GB/s this VM can use.");
+                System.out.println("Please type int the amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
                 vmBandwidth = newDoubleInput();
-                System.out.println("Please type in the number of GPUs you wish to allocate to the VM");
+                System.out.println("Please type in the number of GPUs you wish to allocate to the VM.");
                 vmGpus = newIntegerInput();
                 createVmNetworkedGPU(vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
                 break;
@@ -521,7 +521,7 @@ public class Cluster {
                 vmOs = newScan.next();
                 System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
                 vmDiskSpace = newDoubleInput();
-                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM");
+                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM.");
                 int vmGpus = newIntegerInput();
                 updateVmGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
                 break;
@@ -534,7 +534,7 @@ public class Cluster {
                 vmOs = newScan.next();
                 System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
                 vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the updated amount of GB/s this VM can use.");
+                System.out.println("Please type int the updated amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
                 double vmBandwidth = newDoubleInput();
                 updateVmNetworked(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
                 break;
@@ -547,9 +547,9 @@ public class Cluster {
                 vmOs = newScan.next();
                 System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
                 vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the updated amount of GB/s this VM can use.");
+                System.out.println("Please type int the updated amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
                 vmBandwidth = newDoubleInput();
-                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM");
+                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM.");
                 vmGpus = newIntegerInput();
                 updateVmNetworkedGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
                 break;
