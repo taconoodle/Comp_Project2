@@ -44,8 +44,8 @@ public class ProjectCLI {
 
     private static void vmManagementUserMenu(Cluster cluster) {
         while (true) {
-            System.out.println("\nPlease pick an option by pressing the number next to it:\n1. Create a new VM\n" +
-                    "2. Update a currently existing VM.\n3. Delete a VM.\n4. Show a report with the resources of a certain VM or all of them.\n5. Move on to the next stage.");
+            System.out.println("\nPlease pick an option by pressing the number next to it:\n 1. Create a new VM\n" +
+                    " 2. Update a currently existing VM.\n 3. Delete a VM.\n 4. Show a report with the resources of a certain VM or all of them.\n 5. Move on to the next stage.");
             int choice = cluster.getChoice();
             if (choice == 5) {
                 break;
