@@ -16,4 +16,5 @@ public class Globals {
 
     public static final String PROGRAM_INIT_TEXT = "Cluster initialized.\n There are 128 CPU cores, 256 GB RAM, 2048 GB of SSD space, 8 GPUs and 320 GB/s Internet Bandwidth available.\n" +
             " The supported OSes are Windows, Ubuntu and Fedora.";
+    public static final String PROGRAM_INIT_TEXT_GUI = "<html><p>Cluster initialized.<br/>There are 128 CPU cores, 256 GB RAM, 2048 GB of SSD space, 8 GPUs and 320 GB/s Internet Bandwidth available.<br/>The supported OSes are Windows, Ubuntu and Fedora.</p></html>";
 }

@@ -37,13 +37,12 @@ public class VmManagementGUI implements ActionListener {
         reportButton.setBounds(205, 70, 180, 50);
         reportButton.addActionListener(this);
         mainPanel.add(reportButton);
-
     }
 
     @Override
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == createButton) {
-            System.out.println("poutsa");
+            VmTypeChoiceMenu menu = new VmTypeChoiceMenu();
         }
         if(e.getSource() == updateButton) {
             System.out.println("poutsa");
