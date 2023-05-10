@@ -10,6 +10,7 @@ public class ProgramManagementGUI implements ActionListener {
     private JButton createProgram;
     protected ProgramManagementGUI(JFrame frame) {
         mainPanel = new JPanel();
+        mainPanel.setLayout(null);
         mainPanel.setBackground(Color.GRAY);
         mainPanel.setBounds(1100,100,400,1000);
 

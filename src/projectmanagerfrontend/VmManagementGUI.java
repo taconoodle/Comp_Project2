@@ -14,6 +14,7 @@ public class VmManagementGUI implements ActionListener {
 
     protected VmManagementGUI(JFrame frame) {
         mainPanel = new JPanel();
+        mainPanel.setLayout(null);
         mainPanel.setBackground(Color.GRAY);
         mainPanel.setBounds(0,100,400,1000);
         frame.add(mainPanel);
