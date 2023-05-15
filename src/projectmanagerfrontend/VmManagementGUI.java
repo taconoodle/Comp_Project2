@@ -1,5 +1,7 @@
 package projectmanagerfrontend;
 
+import projectmanagerbackend.ClusterGUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -11,8 +13,10 @@ public class VmManagementGUI implements ActionListener {
     private JButton updateButton;
     private JButton deleteButton;
     private JButton reportButton;
+    private ClusterGUI cluster;
+    private int vmId;
 
-    protected VmManagementGUI(JFrame frame) {
+    protected VmManagementGUI(JFrame frame, ClusterGUI cluster) {
         mainPanel = new JPanel();
         mainPanel.setLayout(null);
         mainPanel.setBackground(Color.GRAY);
@@ -38,6 +42,9 @@ public class VmManagementGUI implements ActionListener {
         reportButton.setBounds(205, 70, 180, 50);
         reportButton.addActionListener(this);
         mainPanel.add(reportButton);
+
+        this.cluster = cluster;
+        vmId = 0;
     }
 
     @Override
@@ -46,7 +53,7 @@ public class VmManagementGUI implements ActionListener {
             VmTypeChoiceMenu menu = new VmTypeChoiceMenu();
         }
         if(e.getSource() == updateButton) {
-            System.out.println("poutsa");
+            vmUpdater();
         }
         if(e.getSource() == deleteButton) {
             System.out.println("poutsa");
@@ -54,5 +61,43 @@ public class VmManagementGUI implements ActionListener {
         if(e.getSource() == reportButton) {
             System.out.println("poutsa");
         }
+    }
+
+    private void vmUpdater() {
+        if (cluster.getNumOfVMs() == 0) {
+            //showErrorWindow("<html>There are no VMs.<br/>Create a VM to continue</html>");
+        }
+        chooseVmId();
+        cluster.updateVmMenu(vmId);
+
+    }
+
+    private void chooseVmId() {
+        JFrame idFrame = new JFrame();
+        idFrame.setLayout(null);
+        idFrame.setSize(500,200);
+        idFrame.setVisible(true);
+
+        JLabel info = new JLabel("Type in the ID of the VM");
+        info.setBounds(10,10,200,20);
+        info.setLayout(null);
+        idFrame.add(info);
+
+        JTextField idField = new JTextField();
+        idField.setBounds(10,40,200,20);
+        idField.setLayout(null);
+        idFrame.add(idField);
+
+        JButton submitButton = new JButton("SUBMIT");
+        submitButton.setBounds(180, 100,100,20);
+        idFrame.add(submitButton);
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                vmId = Integer.parseInt(idField.getText());
+            }
+        });
+        return;
     }
 }

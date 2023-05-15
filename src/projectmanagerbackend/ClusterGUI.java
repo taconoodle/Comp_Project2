@@ -1,15 +1,20 @@
 package projectmanagerbackend;
 
-import static globals.Globals.*;
-
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
-import java.util.Scanner;
-import java.util.concurrent.*;
 import java.util.Properties;
+import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
-public class Cluster {
+import static globals.Globals.*;
+import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
+
+public class ClusterGUI {
     private int availableCPU;   //the amount of CPU cores that are available in the cluster
     private double availableRAM; //the amount of RAM that is available in the cluster in GBs
     private double availableDiskSpace;   //the amount of available SSD disk space available in the cluster in GBs
@@ -102,7 +107,7 @@ public class Cluster {
         this.numOfProgs = numOfProgs;
     }
 
-    public Cluster() { //initializes the variables of the Cluster
+    public ClusterGUI() { //initializes the variables of the Cluster
         availableCPU = AMOUNT_OF_CPU;
         availableRAM = AMOUNT_OF_RAM;
         availableDiskSpace = AMOUNT_OF_DISK_SPACE;
@@ -394,40 +399,12 @@ public class Cluster {
         return choice;
     }
 
-    public void vmMenu(int choice) {
-        switch (choice) {
-            case 1:
-                createVmMenu();
-                break;
-            case 2:
-                updateVmMenu();
-                break;
-            case 3:
-                deleteVmMenu();
-                break;
-            case 4:
-                displayVmResourcesMenu();
-                break;
-        }
-    }
-
-    private int newIntegerInput () {
-        int input;
-        do {
-            input = getIntegerWithCheck();
-        } while (input == -1);
-        return input;
-    }   //And the sign said the words of the prophets are written on the subway walls and cement halls...
-
-    private double newDoubleInput () {
-        double input;
-        do {
-            input = getDoubleWithCheck();
-        } while (input == -1);
-        return input;
-    }
 
     public void createVmMenu() {
+        JFrame menuFrame = new JFrame();
+
+
+
         System.out.println("Please choose the type of VM you wish to create:\n1. VM with CPU, RAM, OS and SSD space.\n" +
                 "2. VM with CPU, RAM, OS, SSD space and GPU(s).\n3. VM with CPU, RAM, OS, SSD space and Internet Bandwidth.\n" +
                 "4. VM with CPU, RAM, OS, SSD space, Internet Bandwidth and GPU(s).");
@@ -488,90 +465,329 @@ public class Cluster {
         }
     }//And I think it's gonna be a long-long time, till touchdown brings us around
 
-    private void updateVmMenu() {
-        if (numOfVMs == 0) {
-            System.out.println ("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+    public void updateVmMenu(int vmId) {
+        if(findVmById(vmId) == -1) {
             return;
         }
-        Scanner newScan = new Scanner(System.in);
-        System.out.println("Please type in the ID of the VM you wish to update:");
-        int id = newScan.nextInt();
-        if(findVmById(id) == -1) {
-            return;
-        }
-        int vmType = getVmType(getVmById(id));
+        int vmType = getVmType(getVmById(vmId));
         switch (vmType) {
             case 1:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                int vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                double vmRam = newDoubleInput();
-                System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                String vmOs = newScan.next();
-                System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
-                double vmDiskSpace = newDoubleInput();
-                updatePlainVM(id, vmCores, vmRam, vmOs, vmDiskSpace);
+                JFrame vmFrame = new JFrame();
+                vmFrame.setLayout(null);
+                vmFrame.setSize(500,500);
+                vmFrame.setVisible(true);
+
+                JLabel cpuInfo = new JLabel("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+                cpuInfo.setBounds(10, 10, 200, 20);
+                cpuInfo.setLayout(null);
+                vmFrame.add(cpuInfo);
+
+                JTextField cpuValueField = new JTextField();
+                cpuValueField.setBounds(10, 40, 200, 20);
+                cpuValueField.setLayout(null);
+                vmFrame.add(cpuValueField);
+
+                JLabel ramInfo = new JLabel("Please type in the updated amount of RAM you wish to allocate to the VM.");
+                ramInfo.setBounds(10, 70, 200, 20);
+                ramInfo.setLayout(null);
+                vmFrame.add(ramInfo);
+
+                JTextField ramValueField = new JTextField();
+                ramValueField.setBounds(10, 100, 200, 20);
+                ramValueField.setLayout(null);
+                vmFrame.add(ramValueField);
+
+                JLabel osInfo = new JLabel("Please type in the name of the OS you wish to use with the VM.");
+                osInfo.setBounds(10, 130, 200, 20);
+                osInfo.setLayout(null);
+                vmFrame.add(osInfo);
+
+                JTextField osValueField = new JTextField();
+                osValueField.setBounds(10, 160, 200, 20);
+                osValueField.setLayout(null);
+                vmFrame.add(osValueField);
+
+                JLabel ssdInfo = new JLabel("Please type in the amount of SSD space you wish to allocate to the VM.");
+                ssdInfo.setBounds(10, 190, 200, 20);
+                ssdInfo.setLayout(null);
+                vmFrame.add(ssdInfo);
+
+                JTextField ssdValueField = new JTextField();
+                ssdValueField.setBounds(10, 220, 200, 20);
+                ssdValueField.setLayout(null);
+                vmFrame.add(ssdInfo);
+
+                JButton submitButton = new JButton("SUBMIT");
+                submitButton.setBounds(180, 450, 100, 20);
+                vmFrame.add(submitButton);
+                submitButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        int vmCores = getIntegerWithCheck(cpuValueField);
+                        double vmRam = getDoubleWithCheck(ramValueField);
+                        String vmOs = osValueField.getText();
+                        double vmDiskSpace = getDoubleWithCheck(ssdValueField);
+
+                        updatePlainVM(vmId, vmCores, vmRam, vmOs, vmDiskSpace);
+                    }
+                });
+
                 break;
             case 2:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM.");
-                int vmGpus = newIntegerInput();
-                updateVmGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
-                break;
+
+            vmFrame = new JFrame();
+            vmFrame.setLayout(null);
+            vmFrame.setSize(500,500);
+            vmFrame.setVisible(true);
+
+            cpuInfo = new JLabel("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+            cpuInfo.setBounds(10, 10, 200, 20);
+            cpuInfo.setLayout(null);
+            vmFrame.add(cpuInfo);
+
+            cpuValueField = new JTextField();
+            cpuValueField.setBounds(10, 40, 200, 20);
+            cpuValueField.setLayout(null);
+            vmFrame.add(cpuValueField);
+
+            ramInfo = new JLabel("Please type in the updated amount of RAM you wish to allocate to the VM.");
+            ramInfo.setBounds(10, 70, 200, 20);
+            ramInfo.setLayout(null);
+            vmFrame.add(ramInfo);
+
+            ramValueField = new JTextField();
+            ramValueField.setBounds(10, 100, 200, 20);
+            ramValueField.setLayout(null);
+            vmFrame.add(ramValueField);
+
+            osInfo = new JLabel("Please type in the name of the OS you wish to use with the VM.");
+            osInfo.setBounds(10, 130, 200, 20);
+            osInfo.setLayout(null);
+            vmFrame.add(osInfo);
+
+            osValueField = new JTextField();
+            osValueField.setBounds(10, 160, 200, 20);
+            osValueField.setLayout(null);
+            vmFrame.add(osValueField);
+
+            ssdInfo = new JLabel("Please type in the amount of SSD space you wish to allocate to the VM.");
+            ssdInfo.setBounds(10, 190, 200, 20);
+            ssdInfo.setLayout(null);
+            vmFrame.add(ssdInfo);
+
+            ssdValueField = new JTextField();
+            ssdValueField.setBounds(10, 220, 200, 20);
+            ssdValueField.setLayout(null);
+            vmFrame.add(ssdInfo);
+
+            JLabel gpuInfo = new JLabel("Please type in the amount of GPUs you wish to allocate to the VM.");
+            gpuInfo.setBounds(10, 190, 250, 20);
+            gpuInfo.setLayout(null);
+            vmFrame.add(gpuInfo);
+
+            JTextField gpuValueField = new JTextField();
+            gpuValueField.setBounds(10, 280, 200, 20);
+            gpuValueField.setLayout(null);
+            vmFrame.add(gpuValueField);
+
+            submitButton = new JButton("SUBMIT");
+            submitButton.setBounds(180, 450, 100, 20);
+            vmFrame.add(submitButton);
+            submitButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int vmCores = getIntegerWithCheck(cpuValueField);
+                    double vmRam = getDoubleWithCheck(ramValueField);
+                    String vmOs = osValueField.getText();
+                    double vmDiskSpace = getDoubleWithCheck(ssdValueField);
+                    int vmGpus = getIntegerWithCheck(gpuValueField);
+
+                    updateVmGPU(vmId, vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
+                }
+            });
+
+            break;
+
             case 3:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the updated amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
-                double vmBandwidth = newDoubleInput();
-                updateVmNetworked(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
-                break;
+
+            vmFrame = new JFrame();
+            vmFrame.setLayout(null);
+            vmFrame.setSize(500,500);
+            vmFrame.setVisible(true);
+
+            cpuInfo = new JLabel("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+            cpuInfo.setBounds(10, 10, 200, 20);
+            cpuInfo.setLayout(null);
+            vmFrame.add(cpuInfo);
+
+            cpuValueField = new JTextField();
+            cpuValueField.setBounds(10, 40, 200, 20);
+            cpuValueField.setLayout(null);
+            vmFrame.add(cpuValueField);
+
+            ramInfo = new JLabel("Please type in the updated amount of RAM you wish to allocate to the VM.");
+            ramInfo.setBounds(10, 70, 200, 20);
+            ramInfo.setLayout(null);
+            vmFrame.add(ramInfo);
+
+            ramValueField = new JTextField();
+            ramValueField.setBounds(10, 100, 200, 20);
+            ramValueField.setLayout(null);
+            vmFrame.add(ramValueField);
+
+            osInfo = new JLabel("Please type in the name of the OS you wish to use with the VM.");
+            osInfo.setBounds(10, 130, 200, 20);
+            osInfo.setLayout(null);
+            vmFrame.add(osInfo);
+
+            osValueField = new JTextField();
+            osValueField.setBounds(10, 160, 200, 20);
+            osValueField.setLayout(null);
+            vmFrame.add(osValueField);
+
+            ssdInfo = new JLabel("Please type in the amount of SSD space you wish to allocate to the VM.");
+            ssdInfo.setBounds(10, 190, 200, 20);
+            ssdInfo.setLayout(null);
+            vmFrame.add(ssdInfo);
+
+            ssdValueField = new JTextField();
+            ssdValueField.setBounds(10, 220, 200, 20);
+            ssdValueField.setLayout(null);
+            vmFrame.add(ssdInfo);
+
+            JLabel bandwidthInfo = new JLabel("Please type in the amount of Bandwidth you wish to allocate to the VM.");
+            bandwidthInfo.setBounds(10, 250, 200, 20);
+            bandwidthInfo.setLayout(null);
+            vmFrame.add(bandwidthInfo);
+
+            JTextField bandwidthValueField = new JTextField();
+            bandwidthValueField.setBounds(10, 280, 200, 20);
+            bandwidthValueField.setLayout(null);
+            vmFrame.add(bandwidthValueField);
+
+            submitButton = new JButton("SUBMIT");
+            submitButton.setBounds(180, 450, 100, 20);
+            vmFrame.add(submitButton);
+            submitButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int vmCores = getIntegerWithCheck(cpuValueField);
+                    double vmRam = getDoubleWithCheck(ramValueField);
+                    String vmOs = osValueField.getText();
+                    double vmDiskSpace = getDoubleWithCheck(ssdValueField);
+                    double vmBandwidth = getDoubleWithCheck(bandwidthValueField);
+
+                    updateVmNetworked(vmId, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
+                }
+            });
+
+            break;
+
             case 4:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the updated amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
-                vmBandwidth = newDoubleInput();
-                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM.");
-                vmGpus = newIntegerInput();
-                updateVmNetworkedGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
-                break;
+
+            vmFrame = new JFrame();
+            vmFrame.setLayout(null);
+            vmFrame.setSize(500,500);
+            vmFrame.setVisible(true);
+
+            cpuInfo = new JLabel("Please type in the updated number of CPU cores you wish to allocate to the VM.");
+            cpuInfo.setBounds(10, 10, 200, 20);
+            cpuInfo.setLayout(null);
+            vmFrame.add(cpuInfo);
+
+            cpuValueField = new JTextField();
+            cpuValueField.setBounds(10, 40, 200, 20);
+            cpuValueField.setLayout(null);
+            vmFrame.add(cpuValueField);
+
+            ramInfo = new JLabel("Please type in the updated amount of RAM you wish to allocate to the VM.");
+            ramInfo.setBounds(10, 70, 200, 20);
+            ramInfo.setLayout(null);
+            vmFrame.add(ramInfo);
+
+            ramValueField = new JTextField();
+            ramValueField.setBounds(10, 100, 200, 20);
+            ramValueField.setLayout(null);
+            vmFrame.add(ramValueField);
+
+            osInfo = new JLabel("Please type in the name of the OS you wish to use with the VM.");
+            osInfo.setBounds(10, 130, 200, 20);
+            osInfo.setLayout(null);
+            vmFrame.add(osInfo);
+
+            osValueField = new JTextField();
+            osValueField.setBounds(10, 160, 200, 20);
+            osValueField.setLayout(null);
+            vmFrame.add(osValueField);
+
+            ssdInfo = new JLabel("Please type in the amount of SSD space you wish to allocate to the VM.");
+            ssdInfo.setBounds(10, 190, 200, 20);
+            ssdInfo.setLayout(null);
+            vmFrame.add(ssdInfo);
+
+            ssdValueField = new JTextField();
+            ssdValueField.setBounds(10, 220, 200, 20);
+            ssdValueField.setLayout(null);
+            vmFrame.add(ssdInfo);
+
+            bandwidthInfo = new JLabel("Please type in the amount of Bandwidth you wish to allocate to the VM.");
+            bandwidthInfo.setBounds(10, 250, 200, 20);
+            bandwidthInfo.setLayout(null);
+            vmFrame.add(bandwidthInfo);
+
+            bandwidthValueField = new JTextField();
+            bandwidthValueField.setBounds(10, 280, 200, 20);
+            bandwidthValueField.setLayout(null);
+            vmFrame.add(bandwidthValueField);
+
+            gpuInfo = new JLabel("Please type in the amount of GPUs you wish to allocate to the VM.");
+            gpuInfo.setBounds(10, 190, 250, 20);
+            gpuInfo.setLayout(null);
+            vmFrame.add(gpuInfo);
+
+            gpuValueField = new JTextField();
+            gpuValueField.setBounds(10, 280, 200, 20);
+            gpuValueField.setLayout(null);
+            vmFrame.add(gpuValueField);
+
+            submitButton = new JButton("SUBMIT");
+            submitButton.setBounds(180, 450, 100, 20);
+            vmFrame.add(submitButton);
+            submitButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int vmCores = getIntegerWithCheck(cpuValueField);
+                    double vmRam = getDoubleWithCheck(ramValueField);
+                    String vmOs = osValueField.getText();
+                    double vmDiskSpace = getDoubleWithCheck(ssdValueField);
+                    double vmBandwidth = getDoubleWithCheck(bandwidthValueField);
+                    int vmGpus = getIntegerWithCheck(gpuValueField);
+
+                    updateVmNetworkedGPU(vmId, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
+                }
+            });
+
+            break;
+
         }
     }
 
-    private int getIntegerWithCheck () {
-        Scanner newScan = new Scanner(System.in);
+    private int getIntegerWithCheck (JTextField valueField) {
+
         try {
-            return newScan.nextInt();
+            return parseInt(valueField.getText());
         } catch (InputMismatchException e) {
-            System.out.println("System error: Invalid input. Please enter a valid value.");
+            //error frame
             return -1;
         }
     }
 
-    private double getDoubleWithCheck () {
-        Scanner newScan = new Scanner(System.in);
+    private double getDoubleWithCheck (JTextField valueField) {
+
         try {
-            return newScan.nextDouble();
+            return parseDouble(valueField.getText());
         } catch (InputMismatchException e) {
-            System.out.println("System error: Invalid input. Please enter a valid value.");
+            //show error frame
             return -1;
         }
     }
@@ -856,15 +1072,15 @@ public class Cluster {
             String bandwidthStr = props.getProperty("bandwidth");   //returns null if not found
             String gpuStr = props.getProperty("gpu");   //returns null if not found
             if(coresStr != null && ramStr != null && ssdStr != null) {
-                cores = Integer.parseInt(coresStr);
-                ram = Double.parseDouble(ramStr);
-                ssd = Double.parseDouble(ssdStr);
+                cores = parseInt(coresStr);
+                ram = parseDouble(ramStr);
+                ssd = parseDouble(ssdStr);
             }
             if(bandwidthStr != null) {
-                bandwidth = Double.parseDouble(bandwidthStr);
+                bandwidth = parseDouble(bandwidthStr);
             }
             if(gpuStr != null) {
-                gpu = Integer.parseInt(gpuStr);
+                gpu = parseInt(gpuStr);
             }
             if(bandwidth == 0 && gpu == 0) {
                 if(createPlainVM(cores, ram, os, ssd)) {
@@ -910,16 +1126,16 @@ public class Cluster {
             String gpuStr = props.getProperty("gpu");   //returns null if not found
             String timeStr = props.getProperty("time");
             if(coresStr != null && ramStr != null && ssdStr != null && timeStr != null) {
-                cores = Integer.parseInt(coresStr);
-                ram = Integer.parseInt(ramStr);
-                ssd = Integer.parseInt(ssdStr);
-                time = Integer.parseInt(timeStr);
+                cores = parseInt(coresStr);
+                ram = parseInt(ramStr);
+                ssd = parseInt(ssdStr);
+                time = parseInt(timeStr);
             }
             if(bandwidthStr != null) {
-                bandwidth = Integer.parseInt(bandwidthStr);
+                bandwidth = parseInt(bandwidthStr);
             }
             if(gpuStr != null) {
-                gpu = Integer.parseInt(gpuStr);
+                gpu = parseInt(gpuStr);
             }
             if(createProgram(cores, ram, ssd, gpu, bandwidth, time)) {
                 programCreated = true;

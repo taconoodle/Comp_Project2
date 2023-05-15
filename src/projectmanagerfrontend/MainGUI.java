@@ -1,5 +1,7 @@
 package projectmanagerfrontend;
 
+import projectmanagerbackend.ClusterGUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -10,6 +12,8 @@ import static globals.Globals.*;
 public class MainGUI {
 
     public static void main(String[] args) {
+        ClusterGUI cluster = new ClusterGUI();
+
         JFrame mainFrame = new JFrame();
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mainFrame.setSize(1500, 1000);
@@ -38,8 +42,8 @@ public class MainGUI {
         });
         mainFrame.add(executionButton);
 
-        VmManagementGUI vmMenu = new VmManagementGUI(mainFrame);
-        ProgramManagementGUI programMenu = new ProgramManagementGUI(mainFrame);
+        VmManagementGUI vmMenu = new VmManagementGUI(mainFrame, cluster);
+        //ProgramManagementGUI programMenu = new ProgramManagementGUI(mainFrame, cluster);
 
     }
 }
