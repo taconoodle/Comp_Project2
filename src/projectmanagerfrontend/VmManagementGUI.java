@@ -1,6 +1,7 @@
 package projectmanagerfrontend;
 
 import projectmanagerbackend.ClusterGUI;
+import projectmanagerbackend.ErrorWindow;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,7 +51,7 @@ public class VmManagementGUI implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e){
         if(e.getSource() == createButton) {
-            VmTypeChoiceMenu menu = new VmTypeChoiceMenu();
+            VmTypeChoiceMenu menu = new VmTypeChoiceMenu(cluster);
         }
         if(e.getSource() == updateButton) {
             vmUpdater();
@@ -65,7 +66,8 @@ public class VmManagementGUI implements ActionListener {
 
     private void vmUpdater() {
         if (cluster.getNumOfVMs() == 0) {
-            //showErrorWindow("<html>There are no VMs.<br/>Create a VM to continue</html>");
+            ErrorWindow errorWindow = new ErrorWindow("<html>There are no VMs.<br/>Create a VM to continue</html>");
+            return;
         }
         chooseVmId();
         cluster.updateVmMenu(vmId);
@@ -98,6 +100,5 @@ public class VmManagementGUI implements ActionListener {
                 vmId = Integer.parseInt(idField.getText());
             }
         });
-        return;
-    }
+    }   //Highway to the danger zone...
 }

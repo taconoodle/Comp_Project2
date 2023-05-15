@@ -1,5 +1,7 @@
 package projectmanagerfrontend;
 
+import projectmanagerbackend.ClusterGUI;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -8,7 +10,9 @@ import java.awt.event.ActionListener;
 public class ProgramManagementGUI implements ActionListener {
     private JPanel mainPanel;
     private JButton createProgram;
-    protected ProgramManagementGUI(JFrame frame) {
+    private ClusterGUI cluster;
+    protected ProgramManagementGUI(JFrame frame, ClusterGUI cluster) {
+        this.cluster = cluster;
         mainPanel = new JPanel();
         mainPanel.setLayout(null);
         mainPanel.setBackground(Color.GRAY);
@@ -24,6 +28,6 @@ public class ProgramManagementGUI implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println("O kokas exei megali psoli");
+        cluster.createProgramMenu();
     }
 }

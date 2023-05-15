@@ -43,7 +43,7 @@ public class MainGUI {
         mainFrame.add(executionButton);
 
         VmManagementGUI vmMenu = new VmManagementGUI(mainFrame, cluster);
-        //ProgramManagementGUI programMenu = new ProgramManagementGUI(mainFrame, cluster);
+        ProgramManagementGUI programMenu = new ProgramManagementGUI(mainFrame, cluster);
 
     }
 }
