@@ -2,7 +2,7 @@ package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
 
-public class PlainVMGUI extends VM {
+public class PlainVMGUI extends VMGUI {
     private double vmDiskSpace;
     private double allocatedDiskSpace;
     protected PlainVMGUI(int id, int cores, double ram, OperatingSystems os, double diskSpace) {
@@ -49,7 +49,7 @@ public class PlainVMGUI extends VM {
 
     @Override
     protected String displayResources() {
-        return "\tVM ID: " + getVmId() + "\tVM Cores: " + getVmCores() + "\tVM RAM: " + getVmRam() + " GB" + "\tVM Disk Space: " + vmDiskSpace + " GB";
+        return "VM ID: " + getVmId() + "\tVM Cores: " + getVmCores() + "\tVM RAM: " + getVmRam() + " GB" + "\tVM Disk Space: " + vmDiskSpace + " GB";
     }
 
     @Override
@@ -85,13 +85,13 @@ public class PlainVMGUI extends VM {
     }
 
     @Override
-    protected void startWorkingOnProgram(Program prog) {
+    protected void startWorkingOnProgram(ProgramGUI prog) {
         allocatedDiskSpace -= prog.getPDiskSpace();
         super.startWorkingOnProgram(prog);
     }
 
     @Override
-    protected void stopWorkingOnProgram(Program prog) {
+    protected void stopWorkingOnProgram(ProgramGUI prog) {
         allocatedDiskSpace += prog.getPDiskSpace();
         super.stopWorkingOnProgram(prog);
     }

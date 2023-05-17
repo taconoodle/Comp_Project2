@@ -12,7 +12,7 @@ public abstract class VMGUI {
     private double vmLoad;
     private int allocatedCores;
     private double allocatedRam;
-    private ArrayList<Program> workingOn;
+    private ArrayList<ProgramGUI> workingOn;
     private int numOfProgsInVm;
 
     protected VMGUI(int id, int cores, double ram, OperatingSystems os) {
@@ -23,7 +23,7 @@ public abstract class VMGUI {
         vmLoad = 0;
         allocatedCores = 0;
         allocatedRam = 0;
-        workingOn = new ArrayList<Program>();
+        workingOn = new ArrayList<ProgramGUI>();
     }
 
     public int getVmId() {
@@ -135,11 +135,11 @@ public abstract class VMGUI {
 
     public void setAllocatedBandwidth(double allocatedBandwidth) {}
 
-    protected ArrayList<Program> getWorkingOn() {
+    protected ArrayList<ProgramGUI> getWorkingOn() {
         return workingOn;
     }
 
-    public void setWorkingOn(ArrayList<Program> workingOn) {
+    public void setWorkingOn(ArrayList<ProgramGUI> workingOn) {
         this.workingOn = workingOn;
     }
 
@@ -155,7 +155,7 @@ public abstract class VMGUI {
 
     protected abstract void updateVmResources(String mode);
 
-    protected void startWorkingOnProgram(Program prog) {
+    protected void startWorkingOnProgram(ProgramGUI prog) {
         prog.setPStartExecTime(System.currentTimeMillis());
         allocatedCores += prog.getPCores();
         allocatedRam += prog.getPRam();
@@ -164,7 +164,7 @@ public abstract class VMGUI {
         updateVmResources("commit");
     }
 
-    protected void stopWorkingOnProgram(Program prog) {
+    protected void stopWorkingOnProgram(ProgramGUI prog) {
         allocatedCores -= prog.getPCores();
         allocatedRam -= prog.getPRam();
         workingOn.remove(prog);

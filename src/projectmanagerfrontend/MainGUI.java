@@ -6,8 +6,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import static globals.Globals.*;
+import static javax.swing.JOptionPane.WARNING_MESSAGE;
+import static javax.swing.JOptionPane.showMessageDialog;
 
 public class MainGUI {
 
@@ -31,13 +34,15 @@ public class MainGUI {
         executionButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFrame execFrame = new JFrame();
-                execFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                execFrame.setSize(500, 500);
-                execFrame.setLayout(null);
-                execFrame.setVisible(true);
-
-                ProgramExecutionGUI programExecutionMenu = new ProgramExecutionGUI(execFrame);
+                if (cluster.getNumOfProgs() == 0) {
+                    showMessageDialog(null, "There are no programs. Please create a program to use this function", null, WARNING_MESSAGE);
+                    return;
+                }
+                try {
+                    ProgramExecutionGUI programExecutionMenu = new ProgramExecutionGUI(cluster);
+                } catch (IOException | InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
         mainFrame.add(executionButton);

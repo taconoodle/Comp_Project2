@@ -11,12 +11,12 @@ public class ErrorWindow {
 
         JFrame errorFrame = new JFrame();
         errorFrame.setLayout(null);
-        errorFrame.setSize(200, 200);
+        errorFrame.setSize(300, 300);
         errorFrame.setVisible(true);
         errorFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         JLabel errorLabel = new JLabel(errorMessage);
-        errorLabel.setBounds(10,10,150, 100);
+        errorLabel.setBounds(10,10,250, 100);
         errorLabel.setLayout(null);
         errorFrame.add(errorLabel);
     }

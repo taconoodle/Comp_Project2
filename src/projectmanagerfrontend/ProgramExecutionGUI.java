@@ -1,10 +1,15 @@
 package projectmanagerfrontend;
 
+import projectmanagerbackend.ClusterGUI;
+
 import javax.swing.*;
+import java.io.IOException;
 
 public class ProgramExecutionGUI {
     private JPanel mainPanel;
-    protected ProgramExecutionGUI(JFrame frame) {
-
+    private ClusterGUI cluster;
+    protected ProgramExecutionGUI(ClusterGUI cluster) throws IOException, InterruptedException {
+        cluster.initialProgramPushInQueue();
+        cluster.assignProgramsToVms();
     }
 }

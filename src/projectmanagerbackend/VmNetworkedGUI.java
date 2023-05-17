@@ -2,7 +2,7 @@ package projectmanagerbackend;
 
 import globals.Globals;
 
-public class VmNetworkedGUI extends PlainVM {
+public class VmNetworkedGUI extends PlainVMGUI {
     private double vmBandwidth;
     private double allocatedBandwidth;
 
@@ -79,13 +79,13 @@ public class VmNetworkedGUI extends PlainVM {
     }
 
     @Override
-    protected void startWorkingOnProgram(Program prog) {
+    protected void startWorkingOnProgram(ProgramGUI prog) {
         allocatedBandwidth -= prog.getPBandwidth();
         super.startWorkingOnProgram(prog);
     }
 
     @Override
-    protected void stopWorkingOnProgram(Program prog) {
+    protected void stopWorkingOnProgram(ProgramGUI prog) {
         allocatedBandwidth += prog.getPBandwidth();
         super.stopWorkingOnProgram(prog);
     }

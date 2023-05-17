@@ -4,9 +4,13 @@ import projectmanagerbackend.ClusterGUI;
 import projectmanagerbackend.ErrorWindow;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.InputMismatchException;
+
+import static javax.swing.JOptionPane.*;
 
 public class VmManagementGUI implements ActionListener {
     private JPanel mainPanel;
@@ -15,13 +19,12 @@ public class VmManagementGUI implements ActionListener {
     private JButton deleteButton;
     private JButton reportButton;
     private ClusterGUI cluster;
-    private int vmId;
 
     protected VmManagementGUI(JFrame frame, ClusterGUI cluster) {
         mainPanel = new JPanel();
         mainPanel.setLayout(null);
         mainPanel.setBackground(Color.GRAY);
-        mainPanel.setBounds(0,100,400,1000);
+        mainPanel.setBounds(0, 100, 400, 1000);
         frame.add(mainPanel);
 
         createButton = new JButton("Create a new VM.");
@@ -45,60 +48,95 @@ public class VmManagementGUI implements ActionListener {
         mainPanel.add(reportButton);
 
         this.cluster = cluster;
-        vmId = 0;
     }
 
     @Override
-    public void actionPerformed(ActionEvent e){
-        if(e.getSource() == createButton) {
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == createButton) {
             VmTypeChoiceMenu menu = new VmTypeChoiceMenu(cluster);
         }
-        if(e.getSource() == updateButton) {
+        if (e.getSource() == updateButton) {
             vmUpdater();
         }
-        if(e.getSource() == deleteButton) {
-            System.out.println("poutsa");
+        if (e.getSource() == deleteButton) {
+            vmDeleter();
         }
-        if(e.getSource() == reportButton) {
-            System.out.println("poutsa");
+        if (e.getSource() == reportButton) {
+            vmDisplayer();
+        }
+    }
+
+    private void vmDisplayer() {
+        if (cluster.getNumOfVMs() == 0) {
+            showMessageDialog(null, "There aer no VMs. Please create a VM to use this function", null, WARNING_MESSAGE);
+            return;
+        }
+        String[] options = {"CHOOSE ONE", "ALL", "CANCEL"};
+        int displayChoice = showOptionDialog(null, "Do you want to display all VMs or just one?", null,
+                YES_NO_CANCEL_OPTION, PLAIN_MESSAGE, null, options, 0);
+
+        JFrame vmValues = new JFrame();
+        vmValues.setSize(500,500);
+        vmValues.setVisible(true);
+        vmValues.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        JTextArea vmDataArea = new JTextArea();
+        vmDataArea.setBounds(10, 10, 20, 20);
+        vmDataArea.setLayout(null);
+
+        JScrollPane scrollableArea = new JScrollPane(vmDataArea);
+        scrollableArea.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollableArea.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        vmValues.add(scrollableArea);
+
+        if (displayChoice == 0) {
+            int id = chooseVmId();
+            try {
+                vmDataArea.setText(cluster.displayVmResources(id));
+            } catch (IndexOutOfBoundsException nonExistentVm) {
+                vmValues.dispose();
+            }
+        }
+        if (displayChoice == 1) {
+            vmDataArea.setText(cluster.displayAllVmResources());
         }
     }
 
     private void vmUpdater() {
+        int vmId = 0;
         if (cluster.getNumOfVMs() == 0) {
-            ErrorWindow errorWindow = new ErrorWindow("<html>There are no VMs.<br/>Create a VM to continue</html>");
+            showMessageDialog(null, "There aer no VMs. Please create a VM to use this function", null, WARNING_MESSAGE);
             return;
         }
-        chooseVmId();
+        vmId = chooseVmId();
         cluster.updateVmMenu(vmId);
-
     }
 
-    private void chooseVmId() {
-        JFrame idFrame = new JFrame();
-        idFrame.setLayout(null);
-        idFrame.setSize(500,200);
-        idFrame.setVisible(true);
+    private void vmDeleter() {
+        int vmId = -1;
+        if (cluster.getNumOfVMs() == 0) {
+            showMessageDialog(null, "There are no VMs. Please create a VM to use this function", null, WARNING_MESSAGE);
+            return;
+        }
+        vmId = chooseVmId();
+        if (confirmation() == 0) {
+            cluster.deleteVmMenu(vmId);
+        }
+    }
 
-        JLabel info = new JLabel("Type in the ID of the VM");
-        info.setBounds(10,10,200,20);
-        info.setLayout(null);
-        idFrame.add(info);
+    private int confirmation() {
+        return JOptionPane.showConfirmDialog(null, "Are you sure?");
+    }
 
-        JTextField idField = new JTextField();
-        idField.setBounds(10,40,200,20);
-        idField.setLayout(null);
-        idFrame.add(idField);
-
-        JButton submitButton = new JButton("SUBMIT");
-        submitButton.setBounds(180, 100,100,20);
-        idFrame.add(submitButton);
-
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                vmId = Integer.parseInt(idField.getText());
-            }
-        });
+    private int chooseVmId() {
+        int id = -1;
+        try {
+            id = Integer.parseInt(JOptionPane.showInputDialog("Type in the ID of the VM"));
+        } catch (InputMismatchException e) {
+            showMessageDialog(null, "Please type a number!", null, ERROR_MESSAGE);
+        }
+        return id;
     }   //Highway to the danger zone...
+
 }
