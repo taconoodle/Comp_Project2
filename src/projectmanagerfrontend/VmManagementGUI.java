@@ -8,6 +8,8 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.InputMismatchException;
 
 import static javax.swing.JOptionPane.*;
@@ -19,6 +21,7 @@ public class VmManagementGUI implements ActionListener {
     private JButton deleteButton;
     private JButton reportButton;
     private ClusterGUI cluster;
+    private JButton importVmsFromFile;
 
     protected VmManagementGUI(JFrame frame, ClusterGUI cluster) {
         mainPanel = new JPanel();
@@ -47,6 +50,12 @@ public class VmManagementGUI implements ActionListener {
         reportButton.addActionListener(this);
         mainPanel.add(reportButton);
 
+        importVmsFromFile = new JButton("Import VMs from file.");
+        importVmsFromFile.setBounds(95, 130, 180, 50);
+        importVmsFromFile.addActionListener(this);
+        importVmsFromFile.setLayout(null);
+        mainPanel.add(importVmsFromFile);
+
         this.cluster = cluster;
     }
 
@@ -63,6 +72,20 @@ public class VmManagementGUI implements ActionListener {
         }
         if (e.getSource() == reportButton) {
             vmDisplayer();
+        }
+        if (e.getSource() == importVmsFromFile) {
+            vmImporter();
+        }
+    }
+
+    private void vmImporter() {
+        File vmCfg = new File("cfg/vms.config");
+        try {
+            if (!vmCfg.exists() || !cluster.createVMsFromConfig()) {
+                showMessageDialog(null, "VM import failed or file missing!", null, WARNING_MESSAGE);
+            }
+        } catch (IOException e) {
+            showMessageDialog(null, "VM import failed!", null, WARNING_MESSAGE);
         }
     }
 
@@ -106,7 +129,7 @@ public class VmManagementGUI implements ActionListener {
     private void vmUpdater() {
         int vmId = 0;
         if (cluster.getNumOfVMs() == 0) {
-            showMessageDialog(null, "There aer no VMs. Please create a VM to use this function", null, WARNING_MESSAGE);
+            showMessageDialog(null, "There are no VMs. Please create a VM to use this function", null, WARNING_MESSAGE);
             return;
         }
         vmId = chooseVmId();
