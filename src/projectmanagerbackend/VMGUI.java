@@ -2,6 +2,8 @@ package projectmanagerbackend;
 
 import globals.Globals.OperatingSystems;
 
+import static javax.swing.JOptionPane.*;
+
 import java.util.ArrayList;
 
 public abstract class VMGUI {
@@ -162,6 +164,7 @@ public abstract class VMGUI {
         workingOn.add(prog);
         numOfProgsInVm++;
         updateVmResources("commit");
+        showMessageDialog(null, "Program with ID: " + prog.getPID() + " begun executing.");
     }
 
     protected void stopWorkingOnProgram(ProgramGUI prog) {

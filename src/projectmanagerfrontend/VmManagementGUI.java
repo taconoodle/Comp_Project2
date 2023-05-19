@@ -1,10 +1,8 @@
 package projectmanagerfrontend;
 
 import projectmanagerbackend.ClusterGUI;
-import projectmanagerbackend.ErrorWindow;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

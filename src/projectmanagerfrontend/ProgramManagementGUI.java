@@ -60,5 +60,6 @@ public class ProgramManagementGUI implements ActionListener {
         } catch (IOException ex) {
             showMessageDialog(null, "Program import failed!", null, WARNING_MESSAGE);
         }
+        cluster.sortProgramsByPriority(cluster.getMyProgs());
     }
 }

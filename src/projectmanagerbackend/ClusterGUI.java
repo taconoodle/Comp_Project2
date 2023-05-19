@@ -192,7 +192,7 @@ public class ClusterGUI {
                 return i;
             }
         }
-        new ErrorWindow("No VM with that ID could be found.");
+        showMessageDialog(null, "No VM with that ID could be found.", null, WARNING_MESSAGE);
         return -1;
     }
 
@@ -228,14 +228,14 @@ public class ClusterGUI {
 
     private boolean createPlainVM(int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace)) {
-            new ErrorWindow("<html>System error: -1.</br>Wrong values, not enough resources or OS not supported.</html>");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         PlainVMGUI newVM = new PlainVMGUI(vmIdCount, cores, ram, getOS(os), diskSpace);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace);
-        new ErrorWindow("Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -243,14 +243,14 @@ public class ClusterGUI {
     private boolean createVmGPU(int cores, double ram, String os, double diskSpace, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU)) {
-            new ErrorWindow("<html>System error: -1.</br>Wrong values, not enough resources or OS not supported.</html>");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         VmGPUGUI newVM = new VmGPUGUI(vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, gpus);
-        new ErrorWindow("Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -258,14 +258,14 @@ public class ClusterGUI {
     private boolean createVmNetworked(int cores, double ram, String os, double diskSpace, double bandwidth) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth)) {
-            new ErrorWindow("<html>System error: -1.</br>Wrong values, not enough resources or OS not supported.</html>");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         VmNetworkedGUI newVM = new VmNetworkedGUI(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth);
-        new ErrorWindow("Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -273,14 +273,14 @@ public class ClusterGUI {
     private boolean createVmNetworkedGPU(int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU)) {
-            new ErrorWindow("<html>System error: -1.</br>Wrong values, not enough resources or OS not supported.</html>");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         VmNetworkedGPUGUI newVM = new VmNetworkedGPUGUI(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth, gpus);
-        new ErrorWindow("Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -288,95 +288,95 @@ public class ClusterGUI {
 
     private void updatePlainVM(int vmID, int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) || osExists(os) == -1) {
-            new ErrorWindow("Values not valid, or not enough resources!");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully update VM.");
     }
 
     private void updateVmGPU(int vmID, int cores, double ram, String os, double diskSpace, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
-            new ErrorWindow("Values not valid, or not enough resources!");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully update VM.");
     }
 
     private void updateVmNetworked(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth <= MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || osExists(os) == -1) {
-            new ErrorWindow("Values not valid, or not enough resources!");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully update VM.");
     }
 
     private void updateVmNetworkedGPU(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
-            new ErrorWindow("Values not valid, or not enough resources!");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully update VM.");
     }
 
 
     private void deletePlainVM(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
     private void deleteVmGPU(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmGPUs());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
     private void deleteVmNetworked(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmBandwidth());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
     private void deleteVmNetworkedGPU(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(),
                 myVMs.get(findVmById(vmID)).getVmBandwidth(), myVMs.get(findVmById(vmID)).getVmGPUs());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
     public String displayVmResources(int id) throws IndexOutOfBoundsException {
@@ -389,20 +389,6 @@ public class ClusterGUI {
             vmData.append(vm.displayResources()).append("\n");
         }
         return vmData.toString();
-    }
-
-    public int getChoice() {
-        int choice = 0;
-        Scanner newScan = new Scanner(System.in);
-        try {
-            choice = newScan.nextInt();
-            if (choice <= 0 || choice > 5) {
-                throw new InputMismatchException("InvalidChoiceNo");
-            }
-        } catch (InputMismatchException e) {
-            showMessageDialog(null, "Choice number invalid!", null, WARNING_MESSAGE);
-        }
-        return choice;
     }
 
     public void createVmMenu(int vmType) {
@@ -512,9 +498,7 @@ public class ClusterGUI {
             try {
                 return parseInt(num);
             } catch (InputMismatchException e) {
-                //error frame
-                new ErrorWindow("Please enter valid values!");
-                showMessageDialog(null, "Please type valid values!", null, ERROR_MESSAGE);
+                showMessageDialog(null, "Please enter valid values!", null, ERROR_MESSAGE);
             }
         }
     }
@@ -524,7 +508,6 @@ public class ClusterGUI {
             try {
                 return parseDouble(num);
             } catch (InputMismatchException e) {
-                //show error frame
                 showMessageDialog(null, "Please enter valid values!", null, ERROR_MESSAGE);
             }
         }
@@ -532,7 +515,6 @@ public class ClusterGUI {
 
     public void deleteVmMenu(int vmId) {
         int vmType = getVmType(getVmById(vmId));
-        String deletionChoice;
         switch (vmType) {
             case 1:
                 deletePlainVM(vmId);
@@ -549,41 +531,17 @@ public class ClusterGUI {
         }
     }
 
-    private void displayVmResourcesMenu() {
-        if (numOfVMs == 0) {
-            System.out.println("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
-            return;
-        }
-        Scanner newScan = new Scanner(System.in);
-        System.out.println("Do you want to display the resources of all VMs or choose one? Press 1 for all and 2 to pick.");
-        int displayChoice = newScan.nextInt();
-        if (displayChoice != 1 && displayChoice != 2) {
-            System.out.println("Invalid choice number.");
-            return;
-        }
-        if (displayChoice == 1) {
-            displayAllVmResources();
-            return;
-        }
-        System.out.println("Please type in the ID of the VM you wish to display the resources of:");
-        int id = newScan.nextInt();
-        if (findVmById(id) == -1) {
-            return;
-        }
-        displayVmResources(id);
-    }
-
     private boolean createProgram(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime) {
         double[] totalResources = calculateTotalResources();
         if ((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
                 (bandwidth < 0 || bandwidth > totalResources[4]) || expectedTime <= 0) {
-            System.out.println("\nSystem error: Invalid values or not enough VMs to support to execute the program.");
+            showMessageDialog(null, "Program was not added. Invalid values or not enough VMs to support to execute the program.", null, ERROR_MESSAGE);
             return false;
         }
         ProgramGUI newProg = new ProgramGUI(cores, ram, diskSpace, gpu, bandwidth, expectedTime, calculateProgramPriority(totalResources, cores, ram, diskSpace, gpu, bandwidth));
         myProgs.add(newProg);
         numOfProgs++;
-        System.out.println("\nSuccessfully added new Program with ID: " + newProg.getPID() + ".");
+        showMessageDialog(null, "Successfully added new Program with ID: " + newProg.getPID() + ".", null, ERROR_MESSAGE);
         return true;
     }
 
@@ -620,15 +578,16 @@ public class ClusterGUI {
         int expectedTime = getIntegerWithCheck(showInputDialog(null, "Please type in the amount of time in seconds the program needs."));
 
         createProgram(programCores, programRam, programSsd, programBandwidth, programGpu, expectedTime * 1000);
+        sortProgramsByPriority(myProgs);
     }//Lady, runnin' down to the riptide
 
-    private void swap(ArrayList<Program> arr, int indx1, int indx2) {
-        Program temp = arr.get(indx1);
+    private void swap(ArrayList<ProgramGUI> arr, int indx1, int indx2) {
+        ProgramGUI temp = arr.get(indx1);
         arr.set(indx1, arr.get(indx2));
         arr.set(indx2, temp);
     }
 
-    public void sortProgramsByPriority(ArrayList<Program> programs) {
+    public void sortProgramsByPriority(ArrayList<ProgramGUI> programs) {
         for (int i = 0; i < numOfProgs; i++) {
             for (int j = 1; j < numOfProgs - i; j++) {
                 if (programs.get(j).getPPriority() < programs.get(j - 1).getPPriority()) {
@@ -738,6 +697,12 @@ public class ClusterGUI {
             time.sleep(timeToSleep);
         }
         showMessageDialog(null, "All programs are done executing.");
+    }
+
+    public void resetProgramAssignementAttempts() {
+        for (ProgramGUI prog : myProgs) {
+            prog.setAssignAttempts(0);
+        }
     }
 
     private void saveFailedProgram(ProgramGUI prog) throws IOException {   //runs when a program has failed 3 times. Saves the serialized program in a file
