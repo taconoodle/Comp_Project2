@@ -84,9 +84,16 @@ public class VmGPUGUI extends PlainVMGUI {
         allocatedGPUs -= prog.getPGpu();
         super.startWorkingOnProgram(prog);
     }
+
     @Override
     protected void stopWorkingOnProgram(ProgramGUI prog) {
         allocatedGPUs += prog.getPGpu();
         super.stopWorkingOnProgram(prog);
+    }
+
+    @Override
+    protected void calcLoadAfterAssigningProgram(ProgramGUI prog) {
+        allocatedGPUs -= prog.getPGpu();
+        super.calcLoadAfterAssigningProgram(prog);
     }
 }

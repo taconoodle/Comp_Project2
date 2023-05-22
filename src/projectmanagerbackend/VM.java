@@ -170,4 +170,12 @@ public abstract class VM {
         numOfProgsInVm--;
         updateVmResources("release");
     }
+
+    protected void calcLoadAfterAssigningProgram(Program prog) {
+        allocatedCores += prog.getPCores();
+        allocatedRam += prog.getPRam();
+        workingOn.add(prog);
+        numOfProgsInVm++;
+        updateVmResources("commit");
+    }
 }

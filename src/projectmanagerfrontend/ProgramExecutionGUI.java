@@ -1,7 +1,6 @@
 package projectmanagerfrontend;
 
 import projectmanagerbackend.ClusterGUI;
-import projectmanagerbackend.ProgramGUI;
 
 import javax.swing.*;
 import java.io.IOException;

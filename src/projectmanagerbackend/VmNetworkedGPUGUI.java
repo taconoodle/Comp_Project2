@@ -88,6 +88,11 @@ public class VmNetworkedGPUGUI extends VmNetworkedGUI {
         super.startWorkingOnProgram(prog);
     }
     @Override
+    protected void calcLoadAfterAssigningProgram(ProgramGUI prog) {
+        allocatedGPUs -= prog.getPGpu();
+        super.calcLoadAfterAssigningProgram(prog);
+    }
+    @Override
     protected void stopWorkingOnProgram(ProgramGUI prog) {
         allocatedGPUs += prog.getPGpu();
         super.stopWorkingOnProgram(prog);

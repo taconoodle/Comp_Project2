@@ -25,14 +25,15 @@ public class ProjectCLI {
 
     private static void vmManagement(Cluster cluster) throws IOException {
         File vmCfg = new File("cfg/vms.config");
+        System.out.println("Checking for available VMs for import in cfg folder...\n");
         if (!vmCfg.exists() || !cluster.createVMsFromConfig()) {
-            vmConfigNotFound(cluster);
+            System.out.println("No config files were found. Proceeding to CLI menu");
         }
+        vmConfigImportFinished(cluster);
         cluster.displayAllVmResources();
     }
 
-    private static void vmConfigNotFound(Cluster cluster) {
-        System.out.println("No config files were found. Proceeding to CLI menu");
+    private static void vmConfigImportFinished(Cluster cluster) {
         while (true) {
             vmManagementUserMenu(cluster);
             if (cluster.getNumOfVMs() != 0) {

@@ -89,4 +89,10 @@ public class VmGPU extends PlainVM {
         allocatedGPUs += prog.getPGpu();
         super.stopWorkingOnProgram(prog);
     }
+
+    @Override
+    protected void calcLoadAfterAssigningProgram(Program prog) {
+        allocatedGPUs -= prog.getPGpu();
+        super.calcLoadAfterAssigningProgram(prog);
+    }
 }

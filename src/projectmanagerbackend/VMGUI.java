@@ -19,7 +19,7 @@ public abstract class VMGUI {
 
     protected VMGUI(int id, int cores, double ram, OperatingSystems os) {
         vmId = id;
-        vmCores  = cores;
+        vmCores = cores;
         vmRam = ram;
         vmOS = os;
         vmLoad = 0;
@@ -53,7 +53,6 @@ public abstract class VMGUI {
     }
 
 
-
     public OperatingSystems getVmOS() {
         return vmOS;
     }
@@ -63,9 +62,9 @@ public abstract class VMGUI {
     }
 
     protected abstract void updateVM(Object... parameters);
-            //every VM class should define this class to update its values according to their respective variables
-            //the parameters are of type Object with the dots showing that they take the form of an array.
-            //For example, the first parameter could an integer and is parameters[0], the second could be a String and is parameters[1]
+    //every VM class should define this class to update its values according to their respective variables
+    //the parameters are of type Object with the dots showing that they take the form of an array.
+    //For example, the first parameter could an integer and is parameters[0], the second could be a String and is parameters[1]
 
 
     protected abstract String displayResources();
@@ -97,11 +96,15 @@ public abstract class VMGUI {
 
     protected double getVmLoad() {
         return vmLoad;
-    };
+    }
+
+    ;
 
     protected void setVmLoad(double vmLoad) {
         this.vmLoad = vmLoad;
-    };
+    }
+
+    ;
 
     public int getAllocatedCores() {
         return allocatedCores;
@@ -123,19 +126,22 @@ public abstract class VMGUI {
         return 0;
     }
 
-    public void setAllocatedDiskSpace(double allocatedDiskSpace) {}
+    public void setAllocatedDiskSpace(double allocatedDiskSpace) {
+    }
 
     public int getAllocatedGPUs() {
         return 0;
     }
 
-    public void setAllocatedGPUs(int allocatedGPUs) {}
+    public void setAllocatedGPUs(int allocatedGPUs) {
+    }
 
     public double getAllocatedBandwidth() {
         return 0;
     }
 
-    public void setAllocatedBandwidth(double allocatedBandwidth) {}
+    public void setAllocatedBandwidth(double allocatedBandwidth) {
+    }
 
     protected ArrayList<ProgramGUI> getWorkingOn() {
         return workingOn;
@@ -153,7 +159,7 @@ public abstract class VMGUI {
         this.numOfProgsInVm = numOfProgsInVm;
     }
 
-    protected abstract double calculateVmLoad ();
+    protected abstract double calculateVmLoad();
 
     protected abstract void updateVmResources(String mode);
 
@@ -173,5 +179,13 @@ public abstract class VMGUI {
         workingOn.remove(prog);
         numOfProgsInVm--;
         updateVmResources("release");
+    }
+
+    protected void calcLoadAfterAssigningProgram(ProgramGUI prog) {
+        allocatedCores += prog.getPCores();
+        allocatedRam += prog.getPRam();
+        workingOn.add(prog);
+        numOfProgsInVm++;
+        updateVmResources("commit");
     }
 }

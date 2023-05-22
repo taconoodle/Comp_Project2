@@ -87,9 +87,16 @@ public class VmNetworkedGPU extends VmNetworked {
         allocatedGPUs -= prog.getPGpu();
         super.startWorkingOnProgram(prog);
     }
+
     @Override
     protected void stopWorkingOnProgram(Program prog) {
         allocatedGPUs += prog.getPGpu();
         super.stopWorkingOnProgram(prog);
+    }
+
+    @Override
+    protected void calcLoadAfterAssigningProgram(Program prog) {
+        allocatedGPUs -= prog.getPGpu();
+        super.calcLoadAfterAssigningProgram(prog);
     }
 }

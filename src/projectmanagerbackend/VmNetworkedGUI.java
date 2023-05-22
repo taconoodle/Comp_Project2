@@ -83,6 +83,11 @@ public class VmNetworkedGUI extends PlainVMGUI {
         allocatedBandwidth -= prog.getPBandwidth();
         super.startWorkingOnProgram(prog);
     }
+    @Override
+    protected void calcLoadAfterAssigningProgram(ProgramGUI prog) {
+        allocatedBandwidth -= prog.getPBandwidth();
+        super.calcLoadAfterAssigningProgram(prog);
+    }
 
     @Override
     protected void stopWorkingOnProgram(ProgramGUI prog) {

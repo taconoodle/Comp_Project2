@@ -735,6 +735,20 @@ public class Cluster {
         return vmWithLowestLoad;
     }
 
+    private VM findVMWithLowestLoadAfterProgramAssignement(ArrayList<VM> vmsToCheck, Program programToUse) {    //checks all the VMs to find the one with the lowest load
+        VM vmWithLowestLoad = vmsToCheck.get(0);
+        for (VM vm : vmsToCheck) {
+            vmWithLowestLoad.calcLoadAfterAssigningProgram(programToUse);
+            vm.calcLoadAfterAssigningProgram(programToUse);
+            if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
+                vmWithLowestLoad = vm;
+            }
+            vmWithLowestLoad.stopWorkingOnProgram(programToUse);
+            vm.stopWorkingOnProgram(programToUse);
+        }
+        return vmWithLowestLoad;
+    }
+
     public void assignProgramsToVms() throws IOException, InterruptedException {    //assigns the programs in the queue to the appropriate VMs until all the programs are removed from the queue
         File file = new File("log/rejected.out");
         file.delete();
@@ -752,7 +766,7 @@ public class Cluster {
                 programAssignementFailed();
                 break;
             }
-            VM vmToUse = findVMWithLowestLoad(possibleVMs);
+            VM vmToUse = findVMWithLowestLoadAfterProgramAssignement(possibleVMs, queue.peek());
             if (attemptAssignProgramToVm(vmToUse)){
                 break;
             }

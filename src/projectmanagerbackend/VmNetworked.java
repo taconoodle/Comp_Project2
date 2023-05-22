@@ -89,4 +89,10 @@ public class VmNetworked extends PlainVM {
         allocatedBandwidth += prog.getPBandwidth();
         super.stopWorkingOnProgram(prog);
     }
+
+    @Override
+    protected void calcLoadAfterAssigningProgram(Program prog) {
+        allocatedBandwidth -= prog.getPBandwidth();
+        super.calcLoadAfterAssigningProgram(prog);
+    }
 }

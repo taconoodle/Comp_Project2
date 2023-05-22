@@ -1,13 +1,9 @@
 package projectmanagerbackend;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import static javax.swing.JOptionPane.*;
@@ -541,7 +537,7 @@ public class ClusterGUI {
         ProgramGUI newProg = new ProgramGUI(cores, ram, diskSpace, gpu, bandwidth, expectedTime, calculateProgramPriority(totalResources, cores, ram, diskSpace, gpu, bandwidth));
         myProgs.add(newProg);
         numOfProgs++;
-        showMessageDialog(null, "Successfully added new Program with ID: " + newProg.getPID() + ".", null, ERROR_MESSAGE);
+        showMessageDialog(null, "Successfully added new Program with ID: " + newProg.getPID() + ".");
         return true;
     }
 
@@ -614,6 +610,20 @@ public class ClusterGUI {
         return vmWithLowestLoad;
     }
 
+    private VMGUI findVMWithLowestLoadAfterProgramAssignement(ArrayList<VMGUI> vmsToCheck, ProgramGUI programToUse) {    //checks all the VMs to find the one with the lowest load
+        VMGUI vmWithLowestLoad = vmsToCheck.get(0);
+        for (VMGUI vm : vmsToCheck) {
+            vmWithLowestLoad.calcLoadAfterAssigningProgram(programToUse);
+            vm.calcLoadAfterAssigningProgram(programToUse);
+            if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
+                vmWithLowestLoad = vm;
+            }
+            vmWithLowestLoad.stopWorkingOnProgram(programToUse);
+            vm.stopWorkingOnProgram(programToUse);
+        }
+        return vmWithLowestLoad;
+    }
+
     public void assignProgramsToVms() throws IOException, InterruptedException {    //assigns the programs in the queue to the appropriate VMs until all the programs are removed from the queue
         File file = new File("log/rejected.out");
         file.delete();
@@ -631,7 +641,7 @@ public class ClusterGUI {
                 programAssignementFailed();
                 break;
             }
-            VMGUI vmToUse = findVMWithLowestLoad(possibleVMs);
+            VMGUI vmToUse = findVMWithLowestLoadAfterProgramAssignement(possibleVMs, queue.peek());
             if (attemptAssignProgramToVm(vmToUse)) {
                 break;
             }
@@ -720,7 +730,7 @@ public class ClusterGUI {
 
     public boolean createVMsFromConfig() throws IOException {     //CREATE THE FILE DIR
         BufferedReader reader = new BufferedReader(new FileReader("cfg/vms.config"));
-        String vmLine = null;
+        String vmLine;
         boolean vmCreated = false;
         while ((vmLine = reader.readLine()) != null) {
             Properties props = new Properties();
@@ -771,7 +781,7 @@ public class ClusterGUI {
     }
 
     public boolean createProgsFromConfig() throws IOException {
-        String progLine = null;
+        String progLine;
         BufferedReader reader = new BufferedReader(new FileReader("cfg/programs.config"));
         boolean programCreated = false;
         while ((progLine = reader.readLine()) != null) {

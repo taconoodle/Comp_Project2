@@ -90,9 +90,15 @@ public class PlainVMGUI extends VMGUI {
         super.startWorkingOnProgram(prog);
     }
 
+
     @Override
     protected void stopWorkingOnProgram(ProgramGUI prog) {
         allocatedDiskSpace += prog.getPDiskSpace();
         super.stopWorkingOnProgram(prog);
+    }
+    @Override
+    protected void calcLoadAfterAssigningProgram(ProgramGUI prog) {
+        allocatedDiskSpace -= prog.getPDiskSpace();
+        super.calcLoadAfterAssigningProgram(prog);
     }
 }
