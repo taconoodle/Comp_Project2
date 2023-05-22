@@ -95,4 +95,10 @@ public class PlainVM extends VM {
         allocatedDiskSpace += prog.getPDiskSpace();
         super.stopWorkingOnProgram(prog);
     }
+
+    @Override
+    protected void calcLoadAfterAssigningProgram(Program prog) {
+        allocatedDiskSpace -= prog.getPDiskSpace();
+        super.calcLoadAfterAssigningProgram(prog);
+    }
 }
