@@ -111,8 +111,8 @@ public class Cluster {
         numOfVMs = 0;
         vmIdCount = 0;
         numOfProgs = 0;
-        myVMs = new ArrayList<>(1);  //ArrayList that allocates memory dynamically, as the VMs can be infinite as long as there are resources
-        myProgs = new ArrayList<>(1);
+        myVMs = new ArrayList<>();  //ArrayList that allocates memory dynamically, as the VMs can be infinite as long as there are resources
+        myProgs = new ArrayList<>();
     }
 
     private void updateResources(int cores, double ram, double diskSpace) {
@@ -738,13 +738,9 @@ public class Cluster {
     private VM findVMWithLowestLoadAfterProgramAssignement(ArrayList<VM> vmsToCheck, Program programToUse) {    //checks all the VMs to find the one with the lowest load
         VM vmWithLowestLoad = vmsToCheck.get(0);
         for (VM vm : vmsToCheck) {
-            vmWithLowestLoad.calcLoadAfterAssigningProgram(programToUse);
-            vm.calcLoadAfterAssigningProgram(programToUse);
-            if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
+            if (vm.calculateLoadAfterProgAssignement(programToUse) < vmWithLowestLoad.calculateLoadAfterProgAssignement(programToUse)) {
                 vmWithLowestLoad = vm;
             }
-            vmWithLowestLoad.stopWorkingOnProgram(programToUse);
-            vm.stopWorkingOnProgram(programToUse);
         }
         return vmWithLowestLoad;
     }
@@ -758,19 +754,30 @@ public class Cluster {
         waitUntilProgsAreDone();
     }
 
+    private ArrayList<VM> findCompatibleVms() {//KANE TO NA PAIRNEI PROGRAM, PIO APODOTIKO
+        ArrayList<VM> compatibleVms = new ArrayList<VM>();
+        for(VM vm : myVMs) {
+            if (vm.getVmCores() >= queue.peek().getPCores() && vm.getVmRam() >= queue.peek().getPRam() && vm.getVmDiskSpace() >= queue.peek().getPDiskSpace() &&
+                    vm.getVmGPUs() >= queue.peek().getPGpu() && vm.getVmBandwidth() >= queue.peek().getPBandwidth()) {
+                compatibleVms.add(vm);
+            }
+        }
+        return compatibleVms;
+    }
+
     private void findVmToAssignProject() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
-        ArrayList<VM> possibleVMs = new ArrayList<>(myVMs);  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
+        ArrayList<VM> compatibleVMs = findCompatibleVms(); //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
             unassignFinishedPrograms();
-            if (possibleVMs.isEmpty()) {
+            if (compatibleVMs.isEmpty()) {
                 programAssignementFailed();
                 break;
             }
-            VM vmToUse = findVMWithLowestLoadAfterProgramAssignement(possibleVMs, queue.peek());
+            VM vmToUse = findVMWithLowestLoadAfterProgramAssignement(compatibleVMs, queue.peek());
             if (attemptAssignProgramToVm(vmToUse)){
                 break;
             }
-            possibleVMs.remove(vmToUse);
+            compatibleVMs.remove(vmToUse);
         }
     }
 
@@ -795,7 +802,8 @@ public class Cluster {
     }
 
     private boolean attemptAssignProgramToVm(VM vm) {  //attempts to assign the program to the passed in VM
-        if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() || vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
+        if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() ||
+                vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
             return false;
         }
         else {

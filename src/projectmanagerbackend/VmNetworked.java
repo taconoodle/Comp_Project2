@@ -57,42 +57,35 @@ public class VmNetworked extends PlainVM {
 
     @Override
     protected double calculateVmLoad() {
-        double vmLoad = super.calculateVmLoad();
-        if (getAllocatedBandwidth() != 0) {
-            vmLoad += (getAllocatedBandwidth() / getVmBandwidth());
-        }
+        double vmLoad = ((double) getAllocatedCores() / (double) getVmCores()) +
+                (getAllocatedRam() / getVmRam()) +
+                (getAllocatedDiskSpace() / getVmDiskSpace()) +
+                (getAllocatedBandwidth() / getVmBandwidth());
         return vmLoad / 4;
     }
 
     @Override
-    protected void updateVmResources(String mode) {
-        switch(mode) {
-            case "commit":
-                super.updateVmResources("commit");
-                vmBandwidth -= allocatedBandwidth;
-                break;
-            case "release":
-                super.updateVmResources("release");
-                vmBandwidth += allocatedBandwidth;
-                break;
-        }
-    }
-
-    @Override
     protected void startWorkingOnProgram(Program prog) {
-        allocatedBandwidth -= prog.getPBandwidth();
+        allocatedBandwidth += prog.getPBandwidth();
+
+        vmBandwidth -= prog.getPBandwidth();
         super.startWorkingOnProgram(prog);
     }
 
     @Override
     protected void stopWorkingOnProgram(Program prog) {
-        allocatedBandwidth += prog.getPBandwidth();
+        allocatedBandwidth -= prog.getPBandwidth();
+
+        vmBandwidth += prog.getPBandwidth();
         super.stopWorkingOnProgram(prog);
     }
 
     @Override
-    protected void calcLoadAfterAssigningProgram(Program prog) {
-        allocatedBandwidth -= prog.getPBandwidth();
-        super.calcLoadAfterAssigningProgram(prog);
+    protected double calculateLoadAfterProgAssignement(Program prog) {
+        double vmLoad = ((double) getAllocatedCores() / (double) getVmCores()) +
+                ((getAllocatedRam() + prog.getPRam())/ getVmRam()) +
+                ((getAllocatedDiskSpace() + prog.getPDiskSpace()) / getVmDiskSpace()) +
+                ((getAllocatedBandwidth() + prog.getPBandwidth()) / getVmBandwidth());
+        return vmLoad / 4;
     }
 }

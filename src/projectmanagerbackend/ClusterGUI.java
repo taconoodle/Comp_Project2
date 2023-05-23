@@ -113,8 +113,8 @@ public class ClusterGUI {
         numOfVMs = 0;
         vmIdCount = 0;
         numOfProgs = 0;
-        myVMs = new ArrayList<>(1);  //ArrayList that allocates memory dynamically, as the VMs can be infinite as long as there are resources
-        myProgs = new ArrayList<>(1);
+        myVMs = new ArrayList<>();  //ArrayList that allocates memory dynamically, as the VMs can be infinite as long as there are resources
+        myProgs = new ArrayList<>();
     }
 
     private void updateResources(int cores, double ram, double diskSpace) {
@@ -613,13 +613,9 @@ public class ClusterGUI {
     private VMGUI findVMWithLowestLoadAfterProgramAssignement(ArrayList<VMGUI> vmsToCheck, ProgramGUI programToUse) {    //checks all the VMs to find the one with the lowest load
         VMGUI vmWithLowestLoad = vmsToCheck.get(0);
         for (VMGUI vm : vmsToCheck) {
-            vmWithLowestLoad.calcLoadAfterAssigningProgram(programToUse);
-            vm.calcLoadAfterAssigningProgram(programToUse);
-            if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
+            if (vm.calculateLoadAfterProgAssignement(programToUse) < vmWithLowestLoad.calculateLoadAfterProgAssignement(programToUse)) {
                 vmWithLowestLoad = vm;
             }
-            vmWithLowestLoad.stopWorkingOnProgram(programToUse);
-            vm.stopWorkingOnProgram(programToUse);
         }
         return vmWithLowestLoad;
     }
@@ -633,19 +629,30 @@ public class ClusterGUI {
         waitUntilProgsAreDone();
     }
 
+    private ArrayList<VMGUI> findCompatibleVms() {
+        ArrayList<VMGUI> compatibleVms = new ArrayList<VMGUI>();
+        for(VMGUI vm : myVMs) {
+            if (vm.getVmCores() >= queue.peek().getPCores() && vm.getVmRam() >= queue.peek().getPRam() && vm.getVmDiskSpace() >= queue.peek().getPDiskSpace() &&
+                    vm.getVmGPUs() >= queue.peek().getPGpu() && vm.getVmBandwidth() >= queue.peek().getPBandwidth()) {
+                compatibleVms.add(vm);
+            }
+        }
+        return compatibleVms;
+    }
+
     private void findVmToAssignProject() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
-        ArrayList<VMGUI> possibleVMs = new ArrayList<VMGUI>(myVMs);  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
+        ArrayList<VMGUI> compatibleVMs = findCompatibleVms();  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
             unassignFinishedPrograms();
-            if (possibleVMs.isEmpty()) {
+            if (compatibleVMs.isEmpty()) {
                 programAssignementFailed();
                 break;
             }
-            VMGUI vmToUse = findVMWithLowestLoadAfterProgramAssignement(possibleVMs, queue.peek());
+            VMGUI vmToUse = findVMWithLowestLoadAfterProgramAssignement(compatibleVMs, queue.peek());
             if (attemptAssignProgramToVm(vmToUse)) {
                 break;
             }
-            possibleVMs.remove(vmToUse);
+            compatibleVMs.remove(vmToUse);
         }
     }
 
@@ -669,7 +676,8 @@ public class ClusterGUI {
     }
 
     private boolean attemptAssignProgramToVm(VMGUI vm) {  //attempts to assign the program to the passed in VM
-        if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() || vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
+        if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() ||
+                vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
             return false;
         } else {
             vm.startWorkingOnProgram(queue.pop());

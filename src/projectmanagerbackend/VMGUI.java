@@ -98,13 +98,9 @@ public abstract class VMGUI {
         return vmLoad;
     }
 
-    ;
-
     protected void setVmLoad(double vmLoad) {
         this.vmLoad = vmLoad;
     }
-
-    ;
 
     public int getAllocatedCores() {
         return allocatedCores;
@@ -161,31 +157,29 @@ public abstract class VMGUI {
 
     protected abstract double calculateVmLoad();
 
-    protected abstract void updateVmResources(String mode);
+    protected abstract double calculateLoadAfterProgAssignement(ProgramGUI prog);
 
     protected void startWorkingOnProgram(ProgramGUI prog) {
         prog.setPStartExecTime(System.currentTimeMillis());
         allocatedCores += prog.getPCores();
         allocatedRam += prog.getPRam();
+
+        vmCores -= prog.getPCores();
+        vmRam -= prog.getPRam();
+
         workingOn.add(prog);
         numOfProgsInVm++;
-        updateVmResources("commit");
         showMessageDialog(null, "Program with ID: " + prog.getPID() + " begun executing.");
     }
 
     protected void stopWorkingOnProgram(ProgramGUI prog) {
         allocatedCores -= prog.getPCores();
         allocatedRam -= prog.getPRam();
+
+        vmCores += prog.getPCores();
+        vmRam += prog.getPRam();
+
         workingOn.remove(prog);
         numOfProgsInVm--;
-        updateVmResources("release");
-    }
-
-    protected void calcLoadAfterAssigningProgram(ProgramGUI prog) {
-        allocatedCores += prog.getPCores();
-        allocatedRam += prog.getPRam();
-        workingOn.add(prog);
-        numOfProgsInVm++;
-        updateVmResources("commit");
     }
 }
