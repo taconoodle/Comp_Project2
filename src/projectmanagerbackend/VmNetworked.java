@@ -82,8 +82,8 @@ public class VmNetworked extends PlainVM {
 
     @Override
     protected double calculateLoadAfterProgAssignement(Program prog) {
-        double vmLoad = ((double) getAllocatedCores() / (double) getVmCores()) +
-                ((getAllocatedRam() + prog.getPRam())/ getVmRam()) +
+        double vmLoad = (((double) getAllocatedCores() + (double) prog.getPCores()) / (double) getVmCores()) +
+                ((getAllocatedRam() + prog.getPRam()) / getVmRam()) +
                 ((getAllocatedDiskSpace() + prog.getPDiskSpace()) / getVmDiskSpace()) +
                 ((getAllocatedBandwidth() + prog.getPBandwidth()) / getVmBandwidth());
         return vmLoad / 4;

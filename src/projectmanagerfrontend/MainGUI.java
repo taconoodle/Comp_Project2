@@ -28,7 +28,7 @@ public class MainGUI {
 
         mainFrame.setVisible(true);
 
-        JButton executionButton = new JButton("Execute Programs.");
+        JButton executionButton = new JButton("Execute Programs");
         executionButton.setBounds(650, 110, 180, 50);
         executionButton.addActionListener(new ActionListener() {
             @Override
@@ -38,7 +38,7 @@ public class MainGUI {
                     return;
                 }
                 try {
-                    ProgramExecutionGUI programExecutionMenu = new ProgramExecutionGUI(cluster);
+                    executePrograms(cluster);
                 } catch (IOException | InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -49,5 +49,12 @@ public class MainGUI {
         VmManagementGUI vmMenu = new VmManagementGUI(mainFrame, cluster);
         ProgramManagementGUI programMenu = new ProgramManagementGUI(mainFrame, cluster);
 
+    }
+
+    private static void executePrograms(ClusterGUI cluster) throws IOException, InterruptedException {
+        cluster.resetProgramAssignementAttempts();
+        cluster.sortProgramsByPriority(cluster.getMyProgs());
+        cluster.initialProgramPushInQueue();
+        cluster.assignProgramsToVms();
     }
 }

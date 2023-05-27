@@ -120,19 +120,22 @@ public class Cluster {
         availableRAM -= ram;
         availableDiskSpace -= diskSpace;
     }
+
     private void updateResources(int cores, double ram, double diskSpace, int gpus) {
         availableCPU -= cores;
         availableRAM -= ram;
         availableDiskSpace -= diskSpace;
         availableGPU -= gpus;
     }
+
     private void updateResources(int cores, double ram, double diskSpace, double bandwidth) {
         availableCPU -= cores;
         availableRAM -= ram;
         availableDiskSpace -= diskSpace;
         availableBandwidth -= bandwidth;
     }
-    private void updateResources(int cores, double ram, double diskSpace, double bandwidth, int gpus){
+
+    private void updateResources(int cores, double ram, double diskSpace, double bandwidth, int gpus) {
         availableCPU -= cores;
         availableRAM -= ram;
         availableDiskSpace -= diskSpace;
@@ -145,19 +148,22 @@ public class Cluster {
         availableRAM += ram;
         availableDiskSpace += diskSpace;
     }
+
     private void addResources(int cores, double ram, double diskSpace, int gpus) {
         availableCPU += cores;
         availableRAM += ram;
         availableDiskSpace += diskSpace;
         availableGPU += gpus;
     }
+
     private void addResources(int cores, double ram, double diskSpace, double bandwidth) {
         availableCPU += cores;
         availableRAM += ram;
         availableDiskSpace += diskSpace;
         availableBandwidth += bandwidth;
     }
-    private void addResources(int cores, double ram, double diskSpace, double bandwidth, int gpus){
+
+    private void addResources(int cores, double ram, double diskSpace, double bandwidth, int gpus) {
         availableCPU += cores;
         availableRAM += ram;
         availableDiskSpace += diskSpace;
@@ -173,9 +179,10 @@ public class Cluster {
         }
         return -1;
     }
+
     private int findVmById(int id) {
         for (int i = 0; i < numOfVMs; i++) {
-            if(myVMs.get(i).getVmId() == id) {
+            if (myVMs.get(i).getVmId() == id) {
                 return i;
             }
         }
@@ -185,7 +192,7 @@ public class Cluster {
 
     private VM getVmById(int id) {
         for (int i = 0; i < numOfVMs; i++) {
-            if(myVMs.get(i).getVmId() == id) {
+            if (myVMs.get(i).getVmId() == id) {
                 return myVMs.get(i);
             }
         }
@@ -195,19 +202,16 @@ public class Cluster {
     private int getVmType(VM vm) {
         if (vm instanceof VmNetworkedGPU) {
             return 4;
-        }
-        else if (vm instanceof VmNetworked) {
+        } else if (vm instanceof VmNetworked) {
             return 3;
-        }
-        else if (vm instanceof VmGPU) {
+        } else if (vm instanceof VmGPU) {
             return 2;
-        }
-        else {
+        } else {
             return 1;
         }
     }
 
-    private OperatingSystems getOS (String os) {    //returns the requested OS
+    private OperatingSystems getOS(String os) {    //returns the requested OS
         for (OperatingSystems requestedOS : OperatingSystems.values()) {
             if (requestedOS.name().equals(os.toUpperCase())) {  //checks if the String value of the OS in OperatingSystems equals to the String given. It also converts that the String given is in capitals for the check
                 return requestedOS;
@@ -217,64 +221,63 @@ public class Cluster {
     }
 
     private boolean createPlainVM(int cores, double ram, String os, double diskSpace) {
-        if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace)) {
-            System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace)) {
+            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
             return false;
         }
         PlainVM newVM = new PlainVM(vmIdCount, cores, ram, getOS(os), diskSpace);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace);
-        System.out.println("Successfully added new Plain VM with ID " + vmIdCount +".");
+        System.out.println("Successfully added new Plain VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
 
-    private boolean createVmGPU (int cores, double ram, String os, double diskSpace, int gpus) {
-        if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
+    private boolean createVmGPU(int cores, double ram, String os, double diskSpace, int gpus) {
+        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU)) {
-            System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
             return false;
         }
-        VmGPU newVM = new VmGPU (vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
+        VmGPU newVM = new VmGPU(vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, gpus);
-        System.out.println ("Successfully added new VM with GPU with ID " + vmIdCount +".");
+        System.out.println("Successfully added new VM with GPU with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
 
-    private boolean createVmNetworked (int cores, double ram, String os, double diskSpace, double bandwidth) {
-        if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
+    private boolean createVmNetworked(int cores, double ram, String os, double diskSpace, double bandwidth) {
+        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth)) {
-            System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
             return false;
         }
         VmNetworked newVM = new VmNetworked(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth);
-        System.out.println("Successfully added new networked VM with ID " + vmIdCount +".");
+        System.out.println("Successfully added new networked VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
 
-    private boolean createVmNetworkedGPU (int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
-        if((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
+    private boolean createVmNetworkedGPU(int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
+        if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU)) {
-            System.out.println ("System error: -1. Wrong values, not enough resources or OS not supported.");
+            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
             return false;
         }
         VmNetworkedGPU newVM = new VmNetworkedGPU(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth, gpus);
-        System.out.println("Successfully added new networked VM with GPU with ID " + vmIdCount +".");
+        System.out.println("Successfully added new networked VM with GPU with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
-
 
     private void updatePlainVM(int vmID, int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) || osExists(os) == -1) {
@@ -379,16 +382,15 @@ public class Cluster {
         }
     }
 
-    public int getChoice() {
+    public int getChoice(int min, int max) {
         int choice = 0;
         Scanner newScan = new Scanner(System.in);
         try {
             choice = newScan.nextInt();
-            if (choice <= 0 || choice > 5) {
+            if (choice < min || choice > max) {
                 throw new InputMismatchException("InvalidChoiceNo");
             }
-        }
-        catch (InputMismatchException e) {
+        } catch (InputMismatchException e) {
             System.out.println("Choice number not valid.");
         }
         return choice;
@@ -411,7 +413,7 @@ public class Cluster {
         }
     }
 
-    private int newIntegerInput () {
+    private int newIntegerInput() {
         int input;
         do {
             input = getIntegerWithCheck();
@@ -419,7 +421,7 @@ public class Cluster {
         return input;
     }   //And the sign said the words of the prophets are written on the subway walls and cement halls...
 
-    private double newDoubleInput () {
+    private double newDoubleInput() {
         double input;
         do {
             input = getDoubleWithCheck();
@@ -431,8 +433,8 @@ public class Cluster {
         System.out.println("Please choose the type of VM you wish to create:\n1. VM with CPU, RAM, OS and SSD space.\n" +
                 "2. VM with CPU, RAM, OS, SSD space and GPU(s).\n3. VM with CPU, RAM, OS, SSD space and Internet Bandwidth.\n" +
                 "4. VM with CPU, RAM, OS, SSD space, Internet Bandwidth and GPU(s).");
-                Scanner newScan = new Scanner(System.in);
-        switch (getChoice()) {
+        Scanner newScan = new Scanner(System.in);
+        switch (getChoice(1, 4)) {
             case 1:
                 System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
                 int vmCores = newIntegerInput();
@@ -490,13 +492,13 @@ public class Cluster {
 
     private void updateVmMenu() {
         if (numOfVMs == 0) {
-            System.out.println ("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+            System.out.println("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
             return;
         }
         Scanner newScan = new Scanner(System.in);
         System.out.println("Please type in the ID of the VM you wish to update:");
-        int id = newScan.nextInt();
-        if(findVmById(id) == -1) {
+        int id = newIntegerInput();
+        if (findVmById(id) == -1) {
             return;
         }
         int vmType = getVmType(getVmById(id));
@@ -556,7 +558,7 @@ public class Cluster {
         }
     }
 
-    private int getIntegerWithCheck () {
+    private int getIntegerWithCheck() {
         Scanner newScan = new Scanner(System.in);
         try {
             return newScan.nextInt();
@@ -566,7 +568,7 @@ public class Cluster {
         }
     }
 
-    private double getDoubleWithCheck () {
+    private double getDoubleWithCheck() {
         Scanner newScan = new Scanner(System.in);
         try {
             return newScan.nextDouble();
@@ -578,13 +580,13 @@ public class Cluster {
 
     private void deleteVmMenu() {
         if (numOfVMs == 0) {
-            System.out.println ("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+            System.out.println("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
             return;
         }
         Scanner newScan = new Scanner(System.in);
         System.out.println("Please type in the ID of the VM you wish to delete:");
-        int id = newScan.nextInt();
-        if(findVmById(id) == -1) {
+        int id = newIntegerInput();
+        if (findVmById(id) == -1) {
             return;
         }
         int vmType = getVmType(getVmById(id));
@@ -626,22 +628,21 @@ public class Cluster {
 
     private void displayVmResourcesMenu() {
         if (numOfVMs == 0) {
-            System.out.println ("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+            System.out.println("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
             return;
         }
-        Scanner newScan = new Scanner(System.in);
         System.out.println("Do you want to display the resources of all VMs or choose one? Press 1 for all and 2 to pick.");
-        int displayChoice = newScan.nextInt();
+        int displayChoice = newIntegerInput();
         if (displayChoice != 1 && displayChoice != 2) {
             System.out.println("Invalid choice number.");
             return;
         }
-        if(displayChoice == 1) {
+        if (displayChoice == 1) {
             displayAllVmResources();
             return;
         }
         System.out.println("Please type in the ID of the VM you wish to display the resources of:");
-        int id = newScan.nextInt();
+        int id = newIntegerInput();
         if (findVmById(id) == -1) {
             return;
         }
@@ -650,7 +651,7 @@ public class Cluster {
 
     private boolean createProgram(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime) {
         double[] totalResources = calculateTotalResources();
-        if((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
+        if ((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
                 (bandwidth < 0 || bandwidth > totalResources[4]) || expectedTime <= 0) {
             System.out.println("\nSystem error: Invalid values or not enough VMs to support to execute the program.");
             return false;
@@ -686,7 +687,7 @@ public class Cluster {
         return totalResources;
     }
 
-    public void createProgramMenu () {
+    public void createProgramMenu() {
         System.out.println("Please type in the number of cores the program needs to be executed.");
         int cores = newIntegerInput();
         System.out.println("Please type in the amount of RAM the program needs to be executed.");
@@ -702,14 +703,14 @@ public class Cluster {
         createProgram(cores, ram, diskSpace, gpu, bandwidth, expectedTime * 1000);
     }//Lady, runnin' down to the riptide
 
-    private void swap (ArrayList<Program> arr, int indx1, int indx2) {
+    private void swap(ArrayList<Program> arr, int indx1, int indx2) {
         Program temp = arr.get(indx1);
         arr.set(indx1, arr.get(indx2));
         arr.set(indx2, temp);
     }
 
     public void sortProgramsByPriority(ArrayList<Program> programs) {
-        for (int i = 0; i < numOfProgs; i++)  {
+        for (int i = 0; i < numOfProgs; i++) {
             for (int j = 1; j < numOfProgs - i; j++) {
                 if (programs.get(j).getPPriority() < programs.get(j - 1).getPPriority()) {
                     swap(programs, j - 1, j);
@@ -725,7 +726,7 @@ public class Cluster {
         }
     }
 
-    private VM findVMWithLowestLoad (ArrayList<VM> vmsToCheck) {    //checks all the VMs to find the one with the lowest load
+    private VM findVMWithLowestLoad(ArrayList<VM> vmsToCheck) {    //checks all the VMs to find the one with the lowest load
         VM vmWithLowestLoad = vmsToCheck.get(0);
         for (VM vm : vmsToCheck) {
             if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
@@ -749,14 +750,14 @@ public class Cluster {
         File file = new File("log/rejected.out");
         file.delete();
         while (!queue.isEmpty()) {
-            findVmToAssignProject();
+            findVmToAssignProgram();
         }
         waitUntilProgsAreDone();
     }
 
     private ArrayList<VM> findCompatibleVms() {//KANE TO NA PAIRNEI PROGRAM, PIO APODOTIKO
         ArrayList<VM> compatibleVms = new ArrayList<VM>();
-        for(VM vm : myVMs) {
+        for (VM vm : myVMs) {
             if (vm.getVmCores() >= queue.peek().getPCores() && vm.getVmRam() >= queue.peek().getPRam() && vm.getVmDiskSpace() >= queue.peek().getPDiskSpace() &&
                     vm.getVmGPUs() >= queue.peek().getPGpu() && vm.getVmBandwidth() >= queue.peek().getPBandwidth()) {
                 compatibleVms.add(vm);
@@ -765,7 +766,7 @@ public class Cluster {
         return compatibleVms;
     }
 
-    private void findVmToAssignProject() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
+    private void findVmToAssignProgram() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
         ArrayList<VM> compatibleVMs = findCompatibleVms(); //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
             unassignFinishedPrograms();
@@ -774,7 +775,7 @@ public class Cluster {
                 break;
             }
             VM vmToUse = findVMWithLowestLoadAfterProgramAssignement(compatibleVMs, queue.peek());
-            if (attemptAssignProgramToVm(vmToUse)){
+            if (attemptAssignProgramToVm(vmToUse)) {
                 break;
             }
             compatibleVMs.remove(vmToUse);
@@ -789,8 +790,7 @@ public class Cluster {
 
         if (queue.peek().getAssignAttempts() == 3) {
             saveFailedProgram(queue.pop());
-        }
-        else {
+        } else {
             Program temp = queue.pop();
             queue.push(temp);
             try {
@@ -805,8 +805,7 @@ public class Cluster {
         if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() ||
                 vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
             return false;
-        }
-        else {
+        } else {
             vm.startWorkingOnProgram(queue.pop());
             return true;
         }
@@ -814,8 +813,8 @@ public class Cluster {
 
     private void unassignFinishedPrograms() {   //checks every VM to find if any programs have finished executing and then deletes them from that VM
         for (VM vm : myVMs) {
-            ArrayList<Program> workingOnCopy= new ArrayList<Program>(vm.getWorkingOn());
-            for(Program prog : workingOnCopy){
+            ArrayList<Program> workingOnCopy = new ArrayList<Program>(vm.getWorkingOn());
+            for (Program prog : workingOnCopy) {
                 prog.setCurrentExecTime(System.currentTimeMillis());
                 prog.setPExecTime(prog.getCurrentExecTime() - prog.getPStartExecTime());
                 if (prog.getPExpectedTime() <= prog.getPExecTime()) {
@@ -831,7 +830,7 @@ public class Cluster {
         TimeUnit time = TimeUnit.SECONDS;
         int vmsDone = 0;
 
-        while(vmsDone != numOfVMs){
+        while (vmsDone != numOfVMs) {
             vmsDone = 0;
             unassignFinishedPrograms();
             for (VM vm : myVMs) {
@@ -877,36 +876,37 @@ public class Cluster {
             String ssdStr = props.getProperty("ssd");
             String bandwidthStr = props.getProperty("bandwidth");   //returns null if not found
             String gpuStr = props.getProperty("gpu");   //returns null if not found
-            if(coresStr != null && ramStr != null && ssdStr != null) {
-                cores = Integer.parseInt(coresStr);
-                ram = Double.parseDouble(ramStr);
-                ssd = Double.parseDouble(ssdStr);
-            }
-            if(bandwidthStr != null) {
-                bandwidth = Double.parseDouble(bandwidthStr);
-            }
-            if(gpuStr != null) {
-                gpu = Integer.parseInt(gpuStr);
-            }
-            if(bandwidth == 0 && gpu == 0) {
-                if(createPlainVM(cores, ram, os, ssd)) {
-                    vmCreated = true;
+            try {
+                if (coresStr != null && ramStr != null && ssdStr != null) {
+                    cores = Integer.parseInt(coresStr);
+                    ram = Double.parseDouble(ramStr);
+                    ssd = Double.parseDouble(ssdStr);
                 }
-            }
-            else if(bandwidth != 0 && gpu == 0) {
-                if(createVmNetworked(cores, ram, os, ssd, bandwidth)) {
-                    vmCreated = true;
+                if (bandwidthStr != null) {
+                    bandwidth = Double.parseDouble(bandwidthStr);
                 }
-            }
-            else if(bandwidth == 0 && gpu != 0) {
-                if(createVmGPU(cores, ram, os, ssd, gpu)) {
-                    vmCreated = true;
+                if (gpuStr != null) {
+                    gpu = Integer.parseInt(gpuStr);
                 }
-            }
-            else if(bandwidth != 0 && gpu != 0) {
-                if(createVmNetworkedGPU(cores, ram, os, ssd, bandwidth, gpu)) {
-                    vmCreated = true;
+                if (bandwidth == 0 && gpu == 0) {
+                    if (createPlainVM(cores, ram, os, ssd)) {
+                        vmCreated = true;
+                    }
+                } else if (bandwidth != 0 && gpu == 0) {
+                    if (createVmNetworked(cores, ram, os, ssd, bandwidth)) {
+                        vmCreated = true;
+                    }
+                } else if (bandwidth == 0 && gpu != 0) {
+                    if (createVmGPU(cores, ram, os, ssd, gpu)) {
+                        vmCreated = true;
+                    }
+                } else if (bandwidth != 0 && gpu != 0) {
+                    if (createVmNetworkedGPU(cores, ram, os, ssd, bandwidth, gpu)) {
+                        vmCreated = true;
+                    }
                 }
+            } catch (NumberFormatException ignored) {
+
             }
         }
         return vmCreated;
@@ -916,7 +916,7 @@ public class Cluster {
         String progLine = null;
         BufferedReader reader = new BufferedReader(new FileReader("cfg/programs.config"));
         boolean programCreated = false;
-        while((progLine = reader.readLine()) != null) {
+        while ((progLine = reader.readLine()) != null) {
             Properties props = new Properties();
             String[] allResources = progLine.split(",");
             for (String resource : allResources) {
@@ -931,20 +931,24 @@ public class Cluster {
             String bandwidthStr = props.getProperty("bandwidth");   //returns null if not found
             String gpuStr = props.getProperty("gpu");   //returns null if not found
             String timeStr = props.getProperty("time");
-            if(coresStr != null && ramStr != null && ssdStr != null && timeStr != null) {
-                cores = Integer.parseInt(coresStr);
-                ram = Integer.parseInt(ramStr);
-                ssd = Integer.parseInt(ssdStr);
-                time = Integer.parseInt(timeStr);
-            }
-            if(bandwidthStr != null) {
-                bandwidth = Integer.parseInt(bandwidthStr);
-            }
-            if(gpuStr != null) {
-                gpu = Integer.parseInt(gpuStr);
-            }
-            if(createProgram(cores, ram, ssd, gpu, bandwidth, time)) {
-                programCreated = true;
+            try {
+                if (coresStr != null && ramStr != null && ssdStr != null && timeStr != null) {
+                    cores = Integer.parseInt(coresStr);
+                    ram = Integer.parseInt(ramStr);
+                    ssd = Integer.parseInt(ssdStr);
+                    time = Integer.parseInt(timeStr);
+                }
+                if (bandwidthStr != null) {
+                    bandwidth = Integer.parseInt(bandwidthStr);
+                }
+                if (gpuStr != null) {
+                    gpu = Integer.parseInt(gpuStr);
+                }
+                if (createProgram(cores, ram, ssd, gpu, bandwidth, time)) {
+                    programCreated = true;
+                }
+            } catch (NumberFormatException ignored) {
+
             }
         }
         return programCreated;

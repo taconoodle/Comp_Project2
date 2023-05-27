@@ -18,11 +18,11 @@ public class ClusterGUI {
     private int availableGPU;   //the amount of GPUs available in the cluster
     private double availableBandwidth;   //the amount of Internet bandwidth that is free to utilize in GB/s
     private int numOfVMs; //how many VMs currently exist in the cluster
-    private ArrayList<VMGUI> myVMs; //a dynamic array containing all the VMs, using memory dynamically as VMs are created
+    private ArrayList<VM> myVMs; //a dynamic array containing all the VMs, using memory dynamically as VMs are created
     private int vmIdCount;
-    private ArrayList<ProgramGUI> myProgs;
+    private ArrayList<Program> myProgs;
     private int numOfProgs;
-    private BoundedQueue<ProgramGUI> queue;
+    private BoundedQueue<Program> queue;
 
     private int getAvailableCPU() {
         return availableCPU;
@@ -72,11 +72,11 @@ public class ClusterGUI {
         this.numOfVMs = numOfVMs;
     }
 
-    private ArrayList<VMGUI> getMyVMs() {
+    private ArrayList<VM> getMyVMs() {
         return myVMs;
     }
 
-    private void setMyVMs(ArrayList<VMGUI> myVMs) {
+    private void setMyVMs(ArrayList<VM> myVMs) {
         this.myVMs = myVMs;
     }
 
@@ -88,11 +88,11 @@ public class ClusterGUI {
         this.vmIdCount = vmIdCount;
     }
 
-    public ArrayList<ProgramGUI> getMyProgs() {
+    public ArrayList<Program> getMyProgs() {
         return myProgs;
     }
 
-    private void setMyProgs(ArrayList<ProgramGUI> myProgs) {
+    private void setMyProgs(ArrayList<Program> myProgs) {
         this.myProgs = myProgs;
     }
 
@@ -192,7 +192,7 @@ public class ClusterGUI {
         return -1;
     }
 
-    private VMGUI getVmById(int id) {
+    private VM getVmById(int id) {
         for (int i = 0; i < numOfVMs; i++) {
             if (myVMs.get(i).getVmId() == id) {
                 return myVMs.get(i);
@@ -201,12 +201,12 @@ public class ClusterGUI {
         return myVMs.get(0);
     }
 
-    private int getVmType(VMGUI vm) {
-        if (vm instanceof VmNetworkedGPUGUI) {
+    private int getVmType(VM vm) {
+        if (vm instanceof VmNetworkedGPU) {
             return 4;
-        } else if (vm instanceof VmNetworkedGUI) {
+        } else if (vm instanceof VmNetworked) {
             return 3;
-        } else if (vm instanceof VmGPUGUI) {
+        } else if (vm instanceof VmGPU) {
             return 2;
         } else {
             return 1;
@@ -227,7 +227,7 @@ public class ClusterGUI {
             showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
-        PlainVMGUI newVM = new PlainVMGUI(vmIdCount, cores, ram, getOS(os), diskSpace);
+        PlainVM newVM = new PlainVM(vmIdCount, cores, ram, getOS(os), diskSpace);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace);
@@ -242,11 +242,11 @@ public class ClusterGUI {
             showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
-        VmGPUGUI newVM = new VmGPUGUI(vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
+        VmGPU newVM = new VmGPU(vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, gpus);
-        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -257,11 +257,11 @@ public class ClusterGUI {
             showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
-        VmNetworkedGUI newVM = new VmNetworkedGUI(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth);
+        VmNetworked newVM = new VmNetworked(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth);
-        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -272,15 +272,14 @@ public class ClusterGUI {
             showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
-        VmNetworkedGPUGUI newVM = new VmNetworkedGPUGUI(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth, gpus);
+        VmNetworkedGPU newVM = new VmNetworkedGPU(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth, gpus);
-        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
-
 
     private void updatePlainVM(int vmID, int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) || osExists(os) == -1) {
@@ -290,7 +289,7 @@ public class ClusterGUI {
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
-        showMessageDialog(null, "Successfully update VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
     private void updateVmGPU(int vmID, int cores, double ram, String os, double diskSpace, int gpus) {
@@ -302,7 +301,7 @@ public class ClusterGUI {
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
-        showMessageDialog(null, "Successfully update VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
     private void updateVmNetworked(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth) {
@@ -314,7 +313,7 @@ public class ClusterGUI {
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
-        showMessageDialog(null, "Successfully update VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
     private void updateVmNetworkedGPU(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
@@ -326,7 +325,7 @@ public class ClusterGUI {
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
-        showMessageDialog(null, "Successfully update VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
 
@@ -381,7 +380,7 @@ public class ClusterGUI {
 
     public String displayAllVmResources() {
         StringBuilder vmData = new StringBuilder();
-        for (VMGUI vm : myVMs) {
+        for (VM vm : myVMs) {
             vmData.append(vm.displayResources()).append("\n");
         }
         return vmData.toString();
@@ -490,21 +489,21 @@ public class ClusterGUI {
     }
 
     private int getIntegerWithCheck(String num) {
-        while(true) {
+        while (true) {
             try {
                 return parseInt(num);
-            } catch (InputMismatchException e) {
-                showMessageDialog(null, "Please enter valid values!", null, ERROR_MESSAGE);
+            } catch (NumberFormatException e) {
+                return -1;
             }
         }
     }
 
     private double getDoubleWithCheck(String num) {
-        while(true) {
+        while (true) {
             try {
                 return parseDouble(num);
-            } catch (InputMismatchException e) {
-                showMessageDialog(null, "Please enter valid values!", null, ERROR_MESSAGE);
+            } catch (NumberFormatException e) {
+                return -1;
             }
         }
     }
@@ -534,7 +533,7 @@ public class ClusterGUI {
             showMessageDialog(null, "Program was not added. Invalid values or not enough VMs to support to execute the program.", null, ERROR_MESSAGE);
             return false;
         }
-        ProgramGUI newProg = new ProgramGUI(cores, ram, diskSpace, gpu, bandwidth, expectedTime, calculateProgramPriority(totalResources, cores, ram, diskSpace, gpu, bandwidth));
+        Program newProg = new Program(cores, ram, diskSpace, gpu, bandwidth, expectedTime, calculateProgramPriority(totalResources, cores, ram, diskSpace, gpu, bandwidth));
         myProgs.add(newProg);
         numOfProgs++;
         showMessageDialog(null, "Successfully added new Program with ID: " + newProg.getPID() + ".");
@@ -577,13 +576,13 @@ public class ClusterGUI {
         sortProgramsByPriority(myProgs);
     }//Lady, runnin' down to the riptide
 
-    private void swap(ArrayList<ProgramGUI> arr, int indx1, int indx2) {
-        ProgramGUI temp = arr.get(indx1);
+    private void swap(ArrayList<Program> arr, int indx1, int indx2) {
+        Program temp = arr.get(indx1);
         arr.set(indx1, arr.get(indx2));
         arr.set(indx2, temp);
     }
 
-    public void sortProgramsByPriority(ArrayList<ProgramGUI> programs) {
+    public void sortProgramsByPriority(ArrayList<Program> programs) {
         for (int i = 0; i < numOfProgs; i++) {
             for (int j = 1; j < numOfProgs - i; j++) {
                 if (programs.get(j).getPPriority() < programs.get(j - 1).getPPriority()) {
@@ -594,15 +593,15 @@ public class ClusterGUI {
     }
 
     public void initialProgramPushInQueue() {   //pushes all the programs in a queue
-        queue = new BoundedQueue<ProgramGUI>(numOfProgs);
-        for (ProgramGUI prog : myProgs) {
+        queue = new BoundedQueue<Program>(numOfProgs);
+        for (Program prog : myProgs) {
             queue.push(prog);
         }
     }
 
-    private VMGUI findVMWithLowestLoad(ArrayList<VMGUI> vmsToCheck) {    //checks all the VMs to find the one with the lowest load
-        VMGUI vmWithLowestLoad = vmsToCheck.get(0);
-        for (VMGUI vm : vmsToCheck) {
+    private VM findVMWithLowestLoad(ArrayList<VM> vmsToCheck) {    //checks all the VMs to find the one with the lowest load
+        VM vmWithLowestLoad = vmsToCheck.get(0);
+        for (VM vm : vmsToCheck) {
             if (vm.getVmLoad() < vmWithLowestLoad.getVmLoad()) {
                 vmWithLowestLoad = vm;
             }
@@ -610,9 +609,9 @@ public class ClusterGUI {
         return vmWithLowestLoad;
     }
 
-    private VMGUI findVMWithLowestLoadAfterProgramAssignement(ArrayList<VMGUI> vmsToCheck, ProgramGUI programToUse) {    //checks all the VMs to find the one with the lowest load
-        VMGUI vmWithLowestLoad = vmsToCheck.get(0);
-        for (VMGUI vm : vmsToCheck) {
+    private VM findVMWithLowestLoadAfterProgramAssignement(ArrayList<VM> vmsToCheck, Program programToUse) {    //checks all the VMs to find the one with the lowest load
+        VM vmWithLowestLoad = vmsToCheck.get(0);
+        for (VM vm : vmsToCheck) {
             if (vm.calculateLoadAfterProgAssignement(programToUse) < vmWithLowestLoad.calculateLoadAfterProgAssignement(programToUse)) {
                 vmWithLowestLoad = vm;
             }
@@ -624,14 +623,14 @@ public class ClusterGUI {
         File file = new File("log/rejected.out");
         file.delete();
         while (!queue.isEmpty()) {
-            findVmToAssignProject();
+            findVmToAssignProgram();
         }
         waitUntilProgsAreDone();
     }
 
-    private ArrayList<VMGUI> findCompatibleVms() {
-        ArrayList<VMGUI> compatibleVms = new ArrayList<VMGUI>();
-        for(VMGUI vm : myVMs) {
+    private ArrayList<VM> findCompatibleVms() {
+        ArrayList<VM> compatibleVms = new ArrayList<VM>();
+        for (VM vm : myVMs) {
             if (vm.getVmCores() >= queue.peek().getPCores() && vm.getVmRam() >= queue.peek().getPRam() && vm.getVmDiskSpace() >= queue.peek().getPDiskSpace() &&
                     vm.getVmGPUs() >= queue.peek().getPGpu() && vm.getVmBandwidth() >= queue.peek().getPBandwidth()) {
                 compatibleVms.add(vm);
@@ -640,15 +639,15 @@ public class ClusterGUI {
         return compatibleVms;
     }
 
-    private void findVmToAssignProject() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
-        ArrayList<VMGUI> compatibleVMs = findCompatibleVms();  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
+    private void findVmToAssignProgram() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
+        ArrayList<VM> compatibleVMs = findCompatibleVms();  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
             unassignFinishedPrograms();
             if (compatibleVMs.isEmpty()) {
                 programAssignementFailed();
                 break;
             }
-            VMGUI vmToUse = findVMWithLowestLoadAfterProgramAssignement(compatibleVMs, queue.peek());
+            VM vmToUse = findVMWithLowestLoadAfterProgramAssignement(compatibleVMs, queue.peek());
             if (attemptAssignProgramToVm(vmToUse)) {
                 break;
             }
@@ -665,7 +664,7 @@ public class ClusterGUI {
         if (queue.peek().getAssignAttempts() == 3) {
             saveFailedProgram(queue.pop());
         } else {
-            ProgramGUI temp = queue.pop();
+            Program temp = queue.pop();
             queue.push(temp);
             try {
                 time.sleep(timeToSleep);
@@ -675,20 +674,21 @@ public class ClusterGUI {
         }
     }
 
-    private boolean attemptAssignProgramToVm(VMGUI vm) {  //attempts to assign the program to the passed in VM
+    private boolean attemptAssignProgramToVm(VM vm) {  //attempts to assign the program to the passed in VM
         if (vm.getVmCores() < queue.peek().getPCores() || vm.getVmRam() < queue.peek().getPRam() || vm.getVmDiskSpace() < queue.peek().getPDiskSpace() ||
                 vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
             return false;
         } else {
+            showMessageDialog(null, "Program with ID: " + queue.peek().getPID() + " begun executing.");
             vm.startWorkingOnProgram(queue.pop());
             return true;
         }
     }
 
     private void unassignFinishedPrograms() {   //checks every VM to find if any programs have finished executing and then deletes them from that VM
-        for (VMGUI vm : myVMs) {
-            ArrayList<ProgramGUI> workingOnCopy = new ArrayList<ProgramGUI>(vm.getWorkingOn());
-            for (ProgramGUI prog : workingOnCopy) {
+        for (VM vm : myVMs) {
+            ArrayList<Program> workingOnCopy = new ArrayList<Program>(vm.getWorkingOn());
+            for (Program prog : workingOnCopy) {
                 prog.setCurrentExecTime(System.currentTimeMillis());
                 prog.setPExecTime(prog.getCurrentExecTime() - prog.getPStartExecTime());
                 if (prog.getPExpectedTime() <= prog.getPExecTime()) {
@@ -707,7 +707,7 @@ public class ClusterGUI {
         while (vmsDone != numOfVMs) {
             vmsDone = 0;
             unassignFinishedPrograms();
-            for (VMGUI vm : myVMs) {
+            for (VM vm : myVMs) {
                 if (vm.getNumOfProgsInVm() == 0) {   //Adds up the number for every vm that does not have any Programs, so when that number is equal to the nubmer of the VMs, every Program is done
                     vmsDone++;
                 }
@@ -718,12 +718,12 @@ public class ClusterGUI {
     }
 
     public void resetProgramAssignementAttempts() {
-        for (ProgramGUI prog : myProgs) {
+        for (Program prog : myProgs) {
             prog.setAssignAttempts(0);
         }
     }
 
-    private void saveFailedProgram(ProgramGUI prog) throws IOException {   //runs when a program has failed 3 times. Saves the serialized program in a file
+    private void saveFailedProgram(Program prog) throws IOException {   //runs when a program has failed 3 times. Saves the serialized program in a file
         File log = new File("log");
         if (!log.exists()) {
             log.mkdir();
@@ -756,33 +756,37 @@ public class ClusterGUI {
             String ssdStr = props.getProperty("ssd");
             String bandwidthStr = props.getProperty("bandwidth");   //returns null if not found
             String gpuStr = props.getProperty("gpu");   //returns null if not found
-            if (coresStr != null && ramStr != null && ssdStr != null) {
-                cores = parseInt(coresStr);
-                ram = parseDouble(ramStr);
-                ssd = parseDouble(ssdStr);
-            }
-            if (bandwidthStr != null) {
-                bandwidth = parseDouble(bandwidthStr);
-            }
-            if (gpuStr != null) {
-                gpu = parseInt(gpuStr);
-            }
-            if (bandwidth == 0 && gpu == 0) {
-                if (createPlainVM(cores, ram, os, ssd)) {
-                    vmCreated = true;
+            try {
+                if (coresStr != null && ramStr != null && ssdStr != null) {
+                    cores = parseInt(coresStr);
+                    ram = parseDouble(ramStr);
+                    ssd = parseDouble(ssdStr);
                 }
-            } else if (bandwidth != 0 && gpu == 0) {
-                if (createVmNetworked(cores, ram, os, ssd, bandwidth)) {
-                    vmCreated = true;
+                if (bandwidthStr != null) {
+                    bandwidth = parseDouble(bandwidthStr);
                 }
-            } else if (bandwidth == 0 && gpu != 0) {
-                if (createVmGPU(cores, ram, os, ssd, gpu)) {
-                    vmCreated = true;
+                if (gpuStr != null) {
+                    gpu = parseInt(gpuStr);
                 }
-            } else if (bandwidth != 0 && gpu != 0) {
-                if (createVmNetworkedGPU(cores, ram, os, ssd, bandwidth, gpu)) {
-                    vmCreated = true;
+                if (bandwidth == 0 && gpu == 0) {
+                    if (createPlainVM(cores, ram, os, ssd)) {
+                        vmCreated = true;
+                    }
+                } else if (bandwidth != 0 && gpu == 0) {
+                    if (createVmNetworked(cores, ram, os, ssd, bandwidth)) {
+                        vmCreated = true;
+                    }
+                } else if (bandwidth == 0 && gpu != 0) {
+                    if (createVmGPU(cores, ram, os, ssd, gpu)) {
+                        vmCreated = true;
+                    }
+                } else if (bandwidth != 0 && gpu != 0) {
+                    if (createVmNetworkedGPU(cores, ram, os, ssd, bandwidth, gpu)) {
+                        vmCreated = true;
+                    }
                 }
+            } catch (NumberFormatException ignored) {
+
             }
         }
         return vmCreated;
@@ -807,20 +811,24 @@ public class ClusterGUI {
             String bandwidthStr = props.getProperty("bandwidth");   //returns null if not found
             String gpuStr = props.getProperty("gpu");   //returns null if not found
             String timeStr = props.getProperty("time");
-            if (coresStr != null && ramStr != null && ssdStr != null && timeStr != null) {
-                cores = parseInt(coresStr);
-                ram = parseInt(ramStr);
-                ssd = parseInt(ssdStr);
-                time = parseInt(timeStr);
-            }
-            if (bandwidthStr != null) {
-                bandwidth = parseInt(bandwidthStr);
-            }
-            if (gpuStr != null) {
-                gpu = parseInt(gpuStr);
-            }
-            if (createProgram(cores, ram, ssd, gpu, bandwidth, time)) {
-                programCreated = true;
+            try {
+                if (coresStr != null && ramStr != null && ssdStr != null && timeStr != null) {
+                    cores = parseInt(coresStr);
+                    ram = parseInt(ramStr);
+                    ssd = parseInt(ssdStr);
+                    time = parseInt(timeStr);
+                }
+                if (bandwidthStr != null) {
+                    bandwidth = parseInt(bandwidthStr);
+                }
+                if (gpuStr != null) {
+                    gpu = parseInt(gpuStr);
+                }
+                if (createProgram(cores, ram, ssd, gpu, bandwidth, time)) {
+                    programCreated = true;
+                }
+            } catch (NumberFormatException ignored) {
+
             }
         }
         return programCreated;

@@ -29,9 +29,9 @@ public class ProgramManagementGUI implements ActionListener {
         createProgram.addActionListener(this);
         mainPanel.add(createProgram);
 
-        importProgramsFromFile = new JButton("Import programs from file");
+        importProgramsFromFile = new JButton("Import Programs from file");
         importProgramsFromFile.setLayout(null);
-        importProgramsFromFile.setBounds(200, 10, 180, 50);
+        importProgramsFromFile.setBounds(200, 10, 182, 50);
         importProgramsFromFile.addActionListener(this);
         mainPanel.add(importProgramsFromFile);
         frame.add(mainPanel);

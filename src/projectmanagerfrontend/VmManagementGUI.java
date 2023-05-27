@@ -28,27 +28,27 @@ public class VmManagementGUI implements ActionListener {
         mainPanel.setBounds(0, 100, 400, 1000);
         frame.add(mainPanel);
 
-        createButton = new JButton("Create a new VM.");
+        createButton = new JButton("Create a new VM");
         createButton.setBounds(15, 10, 180, 50);
         createButton.addActionListener(this);
         mainPanel.add(createButton);
 
-        updateButton = new JButton("Update a VM.");
+        updateButton = new JButton("Update a VM");
         updateButton.setBounds(205, 10, 180, 50);
         updateButton.addActionListener(this);
         mainPanel.add(updateButton);
 
-        deleteButton = new JButton("Delete a VM.");
+        deleteButton = new JButton("Delete a VM");
         deleteButton.setBounds(15, 70, 180, 50);
         deleteButton.addActionListener(this);
         mainPanel.add(deleteButton);
 
-        reportButton = new JButton("Show all VMs.");
+        reportButton = new JButton("Show VM values");
         reportButton.setBounds(205, 70, 180, 50);
         reportButton.addActionListener(this);
         mainPanel.add(reportButton);
 
-        importVmsFromFile = new JButton("Import VMs from file.");
+        importVmsFromFile = new JButton("Import VMs from file");
         importVmsFromFile.setBounds(95, 130, 180, 50);
         importVmsFromFile.addActionListener(this);
         importVmsFromFile.setLayout(null);
@@ -122,10 +122,13 @@ public class VmManagementGUI implements ActionListener {
         if (displayChoice == 1) {
             vmDataArea.setText(cluster.displayAllVmResources());
         }
+        if (displayChoice == 2 || displayChoice == -1) {
+            vmValues.dispose();
+        }
     }
 
     private void vmUpdater() {
-        int vmId = 0;
+        int vmId = -1;
         if (cluster.getNumOfVMs() == 0) {
             showMessageDialog(null, "There are no VMs. Please create a VM to use this function", null, WARNING_MESSAGE);
             return;
@@ -147,14 +150,14 @@ public class VmManagementGUI implements ActionListener {
     }
 
     private int confirmation() {
-        return JOptionPane.showConfirmDialog(null, "Are you sure?");
+        return showConfirmDialog(null, "Are you sure?");
     }
 
     private int chooseVmId() {
         int id = -1;
         try {
-            id = Integer.parseInt(JOptionPane.showInputDialog("Type in the ID of the VM"));
-        } catch (InputMismatchException e) {
+            id = Integer.parseInt(JOptionPane.showInputDialog("Type in, the ID of the VM"));
+        } catch (NumberFormatException e) {
             showMessageDialog(null, "Please type a number!", null, ERROR_MESSAGE);
         }
         return id;

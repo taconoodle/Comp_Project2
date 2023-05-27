@@ -17,7 +17,7 @@ public class ProjectCLI {
 
         programManagement(cluster);
 
-        System.out.println("\nProgram creation completed. Moving to Program execution:");
+        System.out.println("\nProgram creation completed. Moving to Program execution:\n");
 
         cluster.initialProgramPushInQueue();
         cluster.assignProgramsToVms();
@@ -47,7 +47,7 @@ public class ProjectCLI {
         while (true) {
             System.out.println("\nPlease pick an option by pressing the number next to it:\n 1. Create a new VM\n" +
                     " 2. Update a currently existing VM.\n 3. Delete a VM.\n 4. Show a report with the resources of a certain VM or all of them.\n 5. Move on to the next stage.");
-            int choice = cluster.getChoice();
+            int choice = cluster.getChoice(1, 5);
             if (choice == 5) {
                 break;
             }
@@ -77,7 +77,7 @@ public class ProjectCLI {
         while (true) {
             System.out.println("\nPlease pick an option by pressing the number next to it:\n1. Create a new Program\n" +
                     "2. Move on to Program execution");
-            int choice = cluster.getChoice();
+            int choice = cluster.getChoice(1, 2);
             if (choice == 2) {
                 cluster.sortProgramsByPriority(cluster.getMyProgs());
                 break;
