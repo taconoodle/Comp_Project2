@@ -4,12 +4,12 @@ import projectmanagerbackend.*;
 
 import java.io.IOException;
 import java.io.File;
+import static globals.Globals.*;
 
 public class ProjectCLI {
     public static void main(String[] args) throws IOException, InterruptedException {
         Cluster cluster = new Cluster();
-        System.out.println ("Cluster initialized.\nThere are 128 CPU cores, 256 GB RAM, 2048 GB of SSD space, 8 GPUs and 320 GB/s Internet Bandwidth available." +
-                " The supported OSes are Windows, Ubuntu and Fedora.");
+        System.out.println (PROGRAM_INIT_TEXT);
 
         vmManagement(cluster);
 
@@ -17,7 +17,7 @@ public class ProjectCLI {
 
         programManagement(cluster);
 
-        System.out.println("\nProgram creation completed. Moving to Program execution:");
+        System.out.println("\nProgram creation completed. Moving to Program execution:\n");
 
         cluster.initialProgramPushInQueue();
         cluster.assignProgramsToVms();
@@ -25,14 +25,15 @@ public class ProjectCLI {
 
     private static void vmManagement(Cluster cluster) throws IOException {
         File vmCfg = new File("cfg/vms.config");
+        System.out.println("Checking for available VMs for import in cfg folder...\n");
         if (!vmCfg.exists() || !cluster.createVMsFromConfig()) {
-            vmConfigNotFound(cluster);
+            System.out.println("No config files were found. Proceeding to CLI menu");
         }
+        vmConfigImportFinished(cluster);
         cluster.displayAllVmResources();
     }
 
-    private static void vmConfigNotFound(Cluster cluster) {
-        System.out.println("No config files were found. Proceeding to CLI menu");
+    private static void vmConfigImportFinished(Cluster cluster) {
         while (true) {
             vmManagementUserMenu(cluster);
             if (cluster.getNumOfVMs() != 0) {
@@ -44,9 +45,9 @@ public class ProjectCLI {
 
     private static void vmManagementUserMenu(Cluster cluster) {
         while (true) {
-            System.out.println("\nPlease pick an option by pressing the number next to it:\n1. Create a new VM\n" +
-                    "2. Update a currently existing VM.\n3. Delete a VM.\n4. Show a report with the resources of a certain VM or all of them.\n5. Move on to the next stage.");
-            int choice = cluster.getChoice();
+            System.out.println("\nPlease pick an option by pressing the number next to it:\n 1. Create a new VM\n" +
+                    " 2. Update a currently existing VM.\n 3. Delete a VM.\n 4. Show a report with the resources of a certain VM or all of them.\n 5. Move on to the next stage.");
+            int choice = cluster.getChoice(1, 5);
             if (choice == 5) {
                 break;
             }
@@ -76,7 +77,7 @@ public class ProjectCLI {
         while (true) {
             System.out.println("\nPlease pick an option by pressing the number next to it:\n1. Create a new Program\n" +
                     "2. Move on to Program execution");
-            int choice = cluster.getChoice();
+            int choice = cluster.getChoice(1, 2);
             if (choice == 2) {
                 cluster.sortProgramsByPriority(cluster.getMyProgs());
                 break;

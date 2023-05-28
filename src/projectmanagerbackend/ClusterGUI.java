@@ -1,15 +1,17 @@
 package projectmanagerbackend;
 
-import static globals.Globals.*;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
-import java.util.Scanner;
-import java.util.concurrent.*;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
-public class Cluster {
+import static javax.swing.JOptionPane.*;
+import static globals.Globals.*;
+import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
+
+public class ClusterGUI {
     private int availableCPU;   //the amount of CPU cores that are available in the cluster
     private double availableRAM; //the amount of RAM that is available in the cluster in GBs
     private double availableDiskSpace;   //the amount of available SSD disk space available in the cluster in GBs
@@ -102,7 +104,7 @@ public class Cluster {
         this.numOfProgs = numOfProgs;
     }
 
-    public Cluster() { //initializes the variables of the Cluster
+    public ClusterGUI() { //initializes the variables of the Cluster
         availableCPU = AMOUNT_OF_CPU;
         availableRAM = AMOUNT_OF_RAM;
         availableDiskSpace = AMOUNT_OF_DISK_SPACE;
@@ -186,7 +188,7 @@ public class Cluster {
                 return i;
             }
         }
-        System.out.println("System error. No VM with this ID could be found.");
+        showMessageDialog(null, "No VM with that ID could be found.", null, WARNING_MESSAGE);
         return -1;
     }
 
@@ -222,14 +224,14 @@ public class Cluster {
 
     private boolean createPlainVM(int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace)) {
-            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         PlainVM newVM = new PlainVM(vmIdCount, cores, ram, getOS(os), diskSpace);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace);
-        System.out.println("Successfully added new Plain VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new Plain VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -237,14 +239,14 @@ public class Cluster {
     private boolean createVmGPU(int cores, double ram, String os, double diskSpace, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU)) {
-            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         VmGPU newVM = new VmGPU(vmIdCount, cores, ram, getOS(os), diskSpace, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, gpus);
-        System.out.println("Successfully added new VM with GPU with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -252,14 +254,14 @@ public class Cluster {
     private boolean createVmNetworked(int cores, double ram, String os, double diskSpace, double bandwidth) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth)) {
-            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         VmNetworked newVM = new VmNetworked(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth);
-        System.out.println("Successfully added new networked VM with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
@@ -267,399 +269,274 @@ public class Cluster {
     private boolean createVmNetworkedGPU(int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || osExists(os) == -1 || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU)) {
-            System.out.println("System error: -1. Wrong values, not enough resources or OS not supported.");
+            showMessageDialog(null, "VM was not added. Wrong values, not enough resources or OS not supported.", null, ERROR_MESSAGE);
             return false;
         }
         VmNetworkedGPU newVM = new VmNetworkedGPU(vmIdCount, cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         myVMs.add(newVM);
         numOfVMs++;
         updateResources(cores, ram, diskSpace, bandwidth, gpus);
-        System.out.println("Successfully added new networked VM with GPU with ID " + vmIdCount + ".");
+        showMessageDialog(null, "Successfully added new VM with ID " + vmIdCount + ".");
         vmIdCount++;
         return true;
     }
 
     private void updatePlainVM(int vmID, int cores, double ram, String os, double diskSpace) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
     private void updateVmGPU(int vmID, int cores, double ram, String os, double diskSpace, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmGPUs());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
     private void updateVmNetworked(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth <= MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
     private void updateVmNetworkedGPU(int vmID, int cores, double ram, String os, double diskSpace, double bandwidth, int gpus) {
         if ((cores <= 0 || cores > availableCPU) || (ram <= 0 || ram > availableRAM) || (diskSpace <= 0 || diskSpace > availableDiskSpace) ||
                 (bandwidth < MIN_BANDWIDTH_PER_VM || bandwidth > availableBandwidth) || (gpus <= 0 || gpus > availableGPU) || osExists(os) == -1) {
-            System.out.println("Error while trying to update VM with ID " + vmID + ". Values given are not valid or there are not enough resources.");
+            showMessageDialog(null, "Values not valid, or not enough resources!", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
         myVMs.get(vmID).updateVM(cores, ram, getOS(os), diskSpace, bandwidth, gpus);
         updateResources(myVMs.get(vmID).getVmCores(), myVMs.get(vmID).getVmRam(), myVMs.get(vmID).getVmDiskSpace(), myVMs.get(vmID).getVmBandwidth(), myVMs.get(vmID).getVmGPUs());
-        System.out.println("Successfully updated VM.");
+        showMessageDialog(null, "Successfully updated VM.");
     }
 
 
     private void deletePlainVM(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
     private void deleteVmGPU(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmGPUs());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
     private void deleteVmNetworked(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmBandwidth());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
     private void deleteVmNetworkedGPU(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");
+            showMessageDialog(null, "VM deletion failed. No VM with such ID exists.", null, ERROR_MESSAGE);
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(),
                 myVMs.get(findVmById(vmID)).getVmBandwidth(), myVMs.get(findVmById(vmID)).getVmGPUs());
         myVMs.remove(myVMs.get(findVmById(vmID)));
         numOfVMs--;
-        System.out.println("VM successfully deleted.");
+        showMessageDialog(null, "VM successfully deleted.");
     }
 
-    private void displayVmResources(int id) {
-        System.out.println(myVMs.get(findVmById(id)).displayResources());
+    public String displayVmResources(int id) throws IndexOutOfBoundsException {
+        return myVMs.get(findVmById(id)).displayResources();
     }
 
-    public void displayAllVmResources() {
+    public String displayAllVmResources() {
+        StringBuilder vmData = new StringBuilder();
         for (VM vm : myVMs) {
-            System.out.println(vm.displayResources());
+            vmData.append(vm.displayResources()).append("\n");
         }
+        return vmData.toString();
     }
 
-    public int getChoice(int min, int max) {
-        int choice = 0;
-        Scanner newScan = new Scanner(System.in);
-        try {
-            choice = newScan.nextInt();
-            if (choice < min || choice > max) {
-                throw new InputMismatchException("InvalidChoiceNo");
-            }
-        } catch (InputMismatchException e) {
-            System.out.println("Choice number not valid.");
-        }
-        return choice;
-    }
+    public void createVmMenu(int vmType) {
+        switch (vmType) {
+            case 1: //plain VM
 
-    public void vmMenu(int choice) {
-        switch (choice) {
-            case 1:
-                createVmMenu();
-                break;
-            case 2:
-                updateVmMenu();
-                break;
-            case 3:
-                deleteVmMenu();
-                break;
-            case 4:
-                displayVmResourcesMenu();
-                break;
-        }
-    }
+                int vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the number of CPU cores you wish to allocate to the VM."));
+                double vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of RAM you wish to allocate to the VM."));
+                String vmOs = showInputDialog(null, "Please type in the OS you wish to install to the VM.");
+                double vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of SSD space you wish to allocate to the VM."));
 
-    private int newIntegerInput() {
-        int input;
-        do {
-            input = getIntegerWithCheck();
-        } while (input == -1);
-        return input;
-    }   //And the sign said the words of the prophets are written on the subway walls and cement halls...
-
-    private double newDoubleInput() {
-        double input;
-        do {
-            input = getDoubleWithCheck();
-        } while (input == -1);
-        return input;
-    }
-
-    public void createVmMenu() {
-        System.out.println("Please choose the type of VM you wish to create:\n1. VM with CPU, RAM, OS and SSD space.\n" +
-                "2. VM with CPU, RAM, OS, SSD space and GPU(s).\n3. VM with CPU, RAM, OS, SSD space and Internet Bandwidth.\n" +
-                "4. VM with CPU, RAM, OS, SSD space, Internet Bandwidth and GPU(s).");
-        Scanner newScan = new Scanner(System.in);
-        switch (getChoice(1, 4)) {
-            case 1:
-                System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
-                int vmCores = newIntegerInput();
-                System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
-                double vmRam = newDoubleInput();
-                System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                String vmOs = newScan.next();
-                System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
-                double vmDiskSpace = newDoubleInput();
                 createPlainVM(vmCores, vmRam, vmOs, vmDiskSpace);
+
                 break;
-            case 2:
-                System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type in the number of GPUs you wish to allocate to the VM");
-                int vmGpus = newIntegerInput();
+
+            case 2: //VM with GPU
+
+                vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the number of CPU cores you wish to allocate to the VM."));
+                vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of RAM you wish to allocate to the VM."));
+                vmOs = showInputDialog(null, "Please type in the OS you wish to install to the VM.");
+                vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of SSD space you wish to allocate to the VM."));
+                int vmGpus = getIntegerWithCheck(showInputDialog(null, "Please type in the number of GPU cores you wish to allocate to the VM."));
+
                 createVmGPU(vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
+
                 break;
-            case 3:
-                System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
-                double vmBandwidth = newDoubleInput();
+            case 3: //VM with Network
+
+                vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the number of CPU cores you wish to allocate to the VM."));
+                vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of RAM you wish to allocate to the VM."));
+                vmOs = showInputDialog(null, "Please type in the OS you wish to install to the VM.");
+                vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of SSD space you wish to allocate to the VM."));
+                double vmBandwidth = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of bandwidth you wish to allocate to the VM."));
+
                 createVmNetworked(vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
+
                 break;
-            case 4:
-                System.out.println("Please type in the number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
-                vmBandwidth = newDoubleInput();
-                System.out.println("Please type in the number of GPUs you wish to allocate to the VM.");
-                vmGpus = newIntegerInput();
+            case 4: //VM with Network and GPU
+
+                vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the number of CPU cores you wish to allocate to the VM."));
+                vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of RAM you wish to allocate to the VM."));
+                vmOs = showInputDialog(null, "Please type in the OS you wish to install to the VM.");
+                vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of SSD space you wish to allocate to the VM."));
+                vmBandwidth = getDoubleWithCheck(showInputDialog(null, "Please type in the amount of bandwidth you wish to allocate to the VM."));
+                vmGpus = getIntegerWithCheck(showInputDialog(null, "Please type in the number of GPU cores you wish to allocate to the VM."));
+
                 createVmNetworkedGPU(vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
+
                 break;
         }
     }//And I think it's gonna be a long-long time, till touchdown brings us around
 
-    private void updateVmMenu() {
-        if (numOfVMs == 0) {
-            System.out.println("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
+    public void updateVmMenu(int vmId) {
+        if (findVmById(vmId) == -1) {
             return;
         }
-        Scanner newScan = new Scanner(System.in);
-        System.out.println("Please type in the ID of the VM you wish to update:");
-        int id = newIntegerInput();
-        if (findVmById(id) == -1) {
-            return;
-        }
-        int vmType = getVmType(getVmById(id));
+        int vmType = getVmType(getVmById(vmId));
         switch (vmType) {
             case 1:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                int vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                double vmRam = newDoubleInput();
-                System.out.println("Please type in the name of the OS you wish to use with the VM.");
-                String vmOs = newScan.next();
-                System.out.println("Please type in the amount of SSD space you wish to allocate to the VM.");
-                double vmDiskSpace = newDoubleInput();
-                updatePlainVM(id, vmCores, vmRam, vmOs, vmDiskSpace);
+                int vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the updated CPU cores value."));
+                double vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the updated RAM value."));
+                String vmOs = showInputDialog(null, "Please type in the updated OS.");
+                double vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the updated SSD space value."));
+
+                updatePlainVM(vmId, vmCores, vmRam, vmOs, vmDiskSpace);
+
                 break;
             case 2:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM.");
-                int vmGpus = newIntegerInput();
-                updateVmGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
+                vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the updated CPU cores value."));
+                vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the updated RAM value."));
+                vmOs = showInputDialog(null, "Please type in the updated OS.");
+                vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the updated SSD space value."));
+                int vmGpus = getIntegerWithCheck(showInputDialog(null, "Please type in the update GPU cores value."));
+
+                updateVmGPU(vmId, vmCores, vmRam, vmOs, vmDiskSpace, vmGpus);
+
                 break;
+
             case 3:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the updated amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
-                double vmBandwidth = newDoubleInput();
-                updateVmNetworked(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
+
+                vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the updated CPU cores value."));
+                vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the updated RAM value."));
+                vmOs = showInputDialog(null, "Please type in the updated OS.");
+                vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the updated SSD space value."));
+                double vmBandwidth = getDoubleWithCheck(showInputDialog(null, "Please type in the updated bandwidth value."));
+
+                updateVmNetworked(vmId, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth);
+
                 break;
+
             case 4:
-                System.out.println("Please type in the updated number of CPU cores you wish to allocate to the VM.");
-                vmCores = newIntegerInput();
-                System.out.println("Please type in the updated amount of RAM you wish to allocate to the VM.");
-                vmRam = newDoubleInput();
-                System.out.println("Please type in the updated name of the OS you wish to use with the VM.");
-                vmOs = newScan.next();
-                System.out.println("Please type in the updated amount of SSD space you wish to allocate to the VM.");
-                vmDiskSpace = newDoubleInput();
-                System.out.println("Please type int the updated amount of GB/s this VM can use. Please note that you must allocate more than 4 GB/s to ensure the VM will work properly.");
-                vmBandwidth = newDoubleInput();
-                System.out.println("Please type in the updated number of GPUs you wish to allocate to the VM.");
-                vmGpus = newIntegerInput();
-                updateVmNetworkedGPU(id, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
+                vmCores = getIntegerWithCheck(showInputDialog(null, "Please type in the updated CPU cores value."));
+                vmRam = getDoubleWithCheck(showInputDialog(null, "Please type in the updated RAM value."));
+                vmOs = showInputDialog(null, "Please type in the updated OS.");
+                vmDiskSpace = getDoubleWithCheck(showInputDialog(null, "Please type in the updated SSD space value."));
+                vmBandwidth = getDoubleWithCheck(showInputDialog(null, "Please type in the updated bandwidth value."));
+                vmGpus = getIntegerWithCheck(showInputDialog(null, "Please type in the update GPU cores value."));
+
+                updateVmNetworkedGPU(vmId, vmCores, vmRam, vmOs, vmDiskSpace, vmBandwidth, vmGpus);
+
                 break;
         }
     }
 
-    private int getIntegerWithCheck() {
-        Scanner newScan = new Scanner(System.in);
-        try {
-            return newScan.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println("System error: Invalid input. Please enter a valid value.");
-            return -1;
+    private int getIntegerWithCheck(String num) {
+        while (true) {
+            try {
+                return parseInt(num);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
         }
     }
 
-    private double getDoubleWithCheck() {
-        Scanner newScan = new Scanner(System.in);
-        try {
-            return newScan.nextDouble();
-        } catch (InputMismatchException e) {
-            System.out.println("System error: Invalid input. Please enter a valid value.");
-            return -1;
+    private double getDoubleWithCheck(String num) {
+        while (true) {
+            try {
+                return parseDouble(num);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
         }
     }
 
-    private void deleteVmMenu() {
-        if (numOfVMs == 0) {
-            System.out.println("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
-            return;
-        }
-        Scanner newScan = new Scanner(System.in);
-        System.out.println("Please type in the ID of the VM you wish to delete:");
-        int id = newIntegerInput();
-        if (findVmById(id) == -1) {
-            return;
-        }
-        int vmType = getVmType(getVmById(id));
-        String deletionChoice;
+    public void deleteVmMenu(int vmId) {
+        int vmType = getVmType(getVmById(vmId));
         switch (vmType) {
             case 1:
-                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
-                deletionChoice = newScan.next().toUpperCase();
-                if (!deletionChoice.equals("Y")) {
-                    return;
-                }
-                deletePlainVM(id);
+                deletePlainVM(vmId);
                 break;
             case 2:
-                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
-                deletionChoice = newScan.next().toUpperCase();
-                if (!deletionChoice.equals("Y")) {
-                    return;
-                }
-                deleteVmGPU(id);
+                deleteVmGPU(vmId);
                 break;
             case 3:
-                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to  or anything else to cancel.");
-                deletionChoice = newScan.next().toUpperCase();
-                if (!deletionChoice.equals("Y")) {
-                    return;
-                }
-                deleteVmNetworked(id);
+                deleteVmNetworked(vmId);
                 break;
             case 4:
-                System.out.println("Are you sure you want to delete the VM? This action is irreversible!. Type Y if you want to proceed or anything else to cancel.");
-                deletionChoice = newScan.next().toUpperCase();
-                if (!deletionChoice.equals("Y")) {
-                    return;
-                }
-                deleteVmNetworkedGPU(id);
+                deleteVmNetworkedGPU(vmId);
+                break;
         }
-    }
-
-    private void displayVmResourcesMenu() {
-        if (numOfVMs == 0) {
-            System.out.println("There are no VMs created in the cluster. Please create a new VM by selecting option 1.");
-            return;
-        }
-        System.out.println("Do you want to display the resources of all VMs or choose one? Press 1 for all and 2 to pick.");
-        int displayChoice = newIntegerInput();
-        if (displayChoice != 1 && displayChoice != 2) {
-            System.out.println("Invalid choice number.");
-            return;
-        }
-        if (displayChoice == 1) {
-            displayAllVmResources();
-            return;
-        }
-        System.out.println("Please type in the ID of the VM you wish to display the resources of:");
-        int id = newIntegerInput();
-        if (findVmById(id) == -1) {
-            return;
-        }
-        displayVmResources(id);
     }
 
     private boolean createProgram(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime) {
         double[] totalResources = calculateTotalResources();
         if ((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
                 (bandwidth < 0 || bandwidth > totalResources[4]) || expectedTime <= 0) {
-            System.out.println("\nSystem error: Invalid values or not enough VMs to support to execute the program.");
+            showMessageDialog(null, "Program was not added. Invalid values or not enough VMs to support to execute the program.", null, ERROR_MESSAGE);
             return false;
         }
         Program newProg = new Program(cores, ram, diskSpace, gpu, bandwidth, expectedTime, calculateProgramPriority(totalResources, cores, ram, diskSpace, gpu, bandwidth));
         myProgs.add(newProg);
         numOfProgs++;
-        System.out.println("\nSuccessfully added new Program with ID: " + newProg.getPID() + ".");
+        showMessageDialog(null, "Successfully added new Program with ID: " + newProg.getPID() + ".");
         return true;
     }
 
@@ -688,19 +565,15 @@ public class Cluster {
     }
 
     public void createProgramMenu() {
-        System.out.println("Please type in the number of cores the program needs to be executed.");
-        int cores = newIntegerInput();
-        System.out.println("Please type in the amount of RAM the program needs to be executed.");
-        int ram = newIntegerInput();
-        System.out.println("Please type in the amount of SSD Disk Space the program needs to be executed.");
-        int diskSpace = newIntegerInput();
-        System.out.println("Please type in the number of GPUs the program needs to be executed.");
-        int gpu = newIntegerInput();
-        System.out.println("Please type in the amount of Bandwidth the program needs to be executed.");
-        int bandwidth = newIntegerInput();
-        System.out.println("Please type in the expected execution time of the program in seconds?");
-        int expectedTime = newIntegerInput();
-        createProgram(cores, ram, diskSpace, gpu, bandwidth, expectedTime * 1000);
+        int programCores = getIntegerWithCheck(showInputDialog(null, "Please type in the amount of CPU cores the program needs."));
+        int programRam = getIntegerWithCheck(showInputDialog(null, "Please type in the amount of RAM the program needs."));
+        int programSsd = getIntegerWithCheck(showInputDialog(null, "Please type in the amount of SSD space the program needs."));
+        int programBandwidth = getIntegerWithCheck(showInputDialog(null, "Please type in the amount of banwidth the program needs."));
+        int programGpu = getIntegerWithCheck(showInputDialog(null, "Please type in the amount of GPU cores the program needs."));
+        int expectedTime = getIntegerWithCheck(showInputDialog(null, "Please type in the amount of time in seconds the program needs."));
+
+        createProgram(programCores, programRam, programSsd, programBandwidth, programGpu, expectedTime * 1000);
+        sortProgramsByPriority(myProgs);
     }//Lady, runnin' down to the riptide
 
     private void swap(ArrayList<Program> arr, int indx1, int indx2) {
@@ -755,11 +628,11 @@ public class Cluster {
         waitUntilProgsAreDone();
     }
 
-    private ArrayList<VM> findCompatibleVms(Program prog) {
+    private ArrayList<VM> findCompatibleVms() {
         ArrayList<VM> compatibleVms = new ArrayList<VM>();
         for (VM vm : myVMs) {
-            if (vm.getVmCores() >= prog.getPCores() && vm.getVmRam() >= prog.getPRam() && vm.getVmDiskSpace() >= prog.getPDiskSpace() &&
-                    vm.getVmGPUs() >= prog.getPGpu() && vm.getVmBandwidth() >= prog.getPBandwidth()) {
+            if (vm.getVmCores() >= queue.peek().getPCores() && vm.getVmRam() >= queue.peek().getPRam() && vm.getVmDiskSpace() >= queue.peek().getPDiskSpace() &&
+                    vm.getVmGPUs() >= queue.peek().getPGpu() && vm.getVmBandwidth() >= queue.peek().getPBandwidth()) {
                 compatibleVms.add(vm);
             }
         }
@@ -767,7 +640,7 @@ public class Cluster {
     }
 
     private void findVmToAssignProgram() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
-        ArrayList<VM> compatibleVMs = findCompatibleVms(queue.peek()); //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
+        ArrayList<VM> compatibleVMs = findCompatibleVms();  //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
             unassignFinishedPrograms();
             if (compatibleVMs.isEmpty()) {
@@ -786,8 +659,8 @@ public class Cluster {
         long timeToSleep = 2L;
         TimeUnit time = TimeUnit.SECONDS;
         queue.peek().setAssignAttempts(queue.peek().getAssignAttempts() + 1);
-        System.out.println("Program with ID " + queue.peek().getPID() + " was not able to be assigned to any VM to avoid overloading. Assignement attempts remaining: " + (MAX_ASSIGNMENT_ATTEMPTS - queue.peek().getAssignAttempts()));
-
+        showMessageDialog(null, "Program with ID " + queue.peek().getPID() + " was not able to be assigned to any VM to avoid overloading. Assignement attempts remaining: " + (MAX_ASSIGNMENT_ATTEMPTS - queue.peek().getAssignAttempts()),
+                null, ERROR_MESSAGE);
         if (queue.peek().getAssignAttempts() == 3) {
             saveFailedProgram(queue.pop());
         } else {
@@ -796,7 +669,7 @@ public class Cluster {
             try {
                 time.sleep(timeToSleep);
             } catch (InterruptedException e) {
-                System.out.println("Interrupted while executing the programs.");
+                showMessageDialog(null, "Interrupted while executing the programs.", null, ERROR_MESSAGE);
             }
         }
     }
@@ -806,6 +679,7 @@ public class Cluster {
                 vm.getVmGPUs() < queue.peek().getPGpu() || vm.getVmBandwidth() < queue.peek().getPBandwidth()) {
             return false;
         } else {
+            showMessageDialog(null, "Program with ID: " + queue.peek().getPID() + " begun executing.");
             vm.startWorkingOnProgram(queue.pop());
             return true;
         }
@@ -819,7 +693,7 @@ public class Cluster {
                 prog.setPExecTime(prog.getCurrentExecTime() - prog.getPStartExecTime());
                 if (prog.getPExpectedTime() <= prog.getPExecTime()) {
                     vm.stopWorkingOnProgram(prog);
-                    System.out.println("Program with ID " + prog.getPID() + " has finished executing and was deleted from the VM.");
+                    showMessageDialog(null, "Program with ID " + prog.getPID() + " has finished executing and was deleted from the VM.");
                 }
             }
         }
@@ -840,7 +714,13 @@ public class Cluster {
             }
             time.sleep(timeToSleep);
         }
-        System.out.println("\nAll programs are done executing.");
+        showMessageDialog(null, "All programs are done executing.");
+    }
+
+    public void resetProgramAssignementAttempts() {
+        for (Program prog : myProgs) {
+            prog.setAssignAttempts(0);
+        }
     }
 
     private void saveFailedProgram(Program prog) throws IOException {   //runs when a program has failed 3 times. Saves the serialized program in a file
@@ -853,12 +733,12 @@ public class Cluster {
         out.writeObject(prog);
         out.flush();
         out.close();
-        System.out.println("Program with ID " + prog.getPID() + " failed. A log was saved in: log/rejected.out");
+        showMessageDialog(null, "Program with ID " + prog.getPID() + " failed. A log was saved in: log/rejected.out", null, ERROR_MESSAGE);
     }
 
-    public boolean createVMsFromConfig() throws IOException {     //CREATE THE FILE DIR
+    public boolean createVMsFromConfig() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("cfg/vms.config"));
-        String vmLine = null;
+        String vmLine;
         boolean vmCreated = false;
         while ((vmLine = reader.readLine()) != null) {
             Properties props = new Properties();
@@ -878,15 +758,15 @@ public class Cluster {
             String gpuStr = props.getProperty("gpu");   //returns null if not found
             try {
                 if (coresStr != null && ramStr != null && ssdStr != null) {
-                    cores = Integer.parseInt(coresStr);
-                    ram = Double.parseDouble(ramStr);
-                    ssd = Double.parseDouble(ssdStr);
+                    cores = parseInt(coresStr);
+                    ram = parseDouble(ramStr);
+                    ssd = parseDouble(ssdStr);
                 }
                 if (bandwidthStr != null) {
-                    bandwidth = Double.parseDouble(bandwidthStr);
+                    bandwidth = parseDouble(bandwidthStr);
                 }
                 if (gpuStr != null) {
-                    gpu = Integer.parseInt(gpuStr);
+                    gpu = parseInt(gpuStr);
                 }
                 if (bandwidth == 0 && gpu == 0) {
                     if (createPlainVM(cores, ram, os, ssd)) {
@@ -913,7 +793,7 @@ public class Cluster {
     }
 
     public boolean createProgsFromConfig() throws IOException {
-        String progLine = null;
+        String progLine;
         BufferedReader reader = new BufferedReader(new FileReader("cfg/programs.config"));
         boolean programCreated = false;
         while ((progLine = reader.readLine()) != null) {
@@ -933,16 +813,16 @@ public class Cluster {
             String timeStr = props.getProperty("time");
             try {
                 if (coresStr != null && ramStr != null && ssdStr != null && timeStr != null) {
-                    cores = Integer.parseInt(coresStr);
-                    ram = Integer.parseInt(ramStr);
-                    ssd = Integer.parseInt(ssdStr);
-                    time = Integer.parseInt(timeStr);
+                    cores = parseInt(coresStr);
+                    ram = parseInt(ramStr);
+                    ssd = parseInt(ssdStr);
+                    time = parseInt(timeStr);
                 }
                 if (bandwidthStr != null) {
-                    bandwidth = Integer.parseInt(bandwidthStr);
+                    bandwidth = parseInt(bandwidthStr);
                 }
                 if (gpuStr != null) {
-                    gpu = Integer.parseInt(gpuStr);
+                    gpu = parseInt(gpuStr);
                 }
                 if (createProgram(cores, ram, ssd, gpu, bandwidth, time)) {
                     programCreated = true;
