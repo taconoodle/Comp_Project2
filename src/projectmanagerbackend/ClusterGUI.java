@@ -736,7 +736,7 @@ public class ClusterGUI {
         showMessageDialog(null, "Program with ID " + prog.getPID() + " failed. A log was saved in: log/rejected.out", null, ERROR_MESSAGE);
     }
 
-    public boolean createVMsFromConfig() throws IOException {     //CREATE THE FILE DIR
+    public boolean createVMsFromConfig() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("cfg/vms.config"));
         String vmLine;
         boolean vmCreated = false;

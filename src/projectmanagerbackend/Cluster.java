@@ -329,7 +329,7 @@ public class Cluster {
 
     private void deletePlainVM(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            System.out.println("VM deletion failed. No VM with such ID exists.");
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace());
@@ -340,7 +340,7 @@ public class Cluster {
 
     private void deleteVmGPU(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            System.out.println("VM deletion failed. No VM with such ID exists.");
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmGPUs());
@@ -351,7 +351,7 @@ public class Cluster {
 
     private void deleteVmNetworked(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            System.out.println("VM deletion failed. No VM with such ID exists.");
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(), myVMs.get(findVmById(vmID)).getVmBandwidth());
@@ -362,7 +362,7 @@ public class Cluster {
 
     private void deleteVmNetworkedGPU(int vmID) {
         if (findVmById(vmID) == -1) {
-            System.out.println("VM deletion failed. No VM with such ID exists.");   //COULD MAKE THIS A METHOD
+            System.out.println("VM deletion failed. No VM with such ID exists.");
             return;
         }
         addResources(myVMs.get(findVmById(vmID)).getVmCores(), myVMs.get(findVmById(vmID)).getVmRam(), myVMs.get(findVmById(vmID)).getVmDiskSpace(),
@@ -755,11 +755,11 @@ public class Cluster {
         waitUntilProgsAreDone();
     }
 
-    private ArrayList<VM> findCompatibleVms() {//KANE TO NA PAIRNEI PROGRAM, PIO APODOTIKO
+    private ArrayList<VM> findCompatibleVms(Program prog) {
         ArrayList<VM> compatibleVms = new ArrayList<VM>();
         for (VM vm : myVMs) {
-            if (vm.getVmCores() >= queue.peek().getPCores() && vm.getVmRam() >= queue.peek().getPRam() && vm.getVmDiskSpace() >= queue.peek().getPDiskSpace() &&
-                    vm.getVmGPUs() >= queue.peek().getPGpu() && vm.getVmBandwidth() >= queue.peek().getPBandwidth()) {
+            if (vm.getVmCores() >= prog.getPCores() && vm.getVmRam() >= prog.getPRam() && vm.getVmDiskSpace() >= prog.getPDiskSpace() &&
+                    vm.getVmGPUs() >= prog.getPGpu() && vm.getVmBandwidth() >= prog.getPBandwidth()) {
                 compatibleVms.add(vm);
             }
         }
@@ -767,7 +767,7 @@ public class Cluster {
     }
 
     private void findVmToAssignProgram() throws IOException {   //checks all the VMs to find the one that can execute the head of the queue
-        ArrayList<VM> compatibleVMs = findCompatibleVms(); //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
+        ArrayList<VM> compatibleVMs = findCompatibleVms(queue.peek()); //A copy of the VM array. The program will check them from the ones with the least load to the most and if they are not able to support the Program, they will get removed from the list
         while (true) {
             unassignFinishedPrograms();
             if (compatibleVMs.isEmpty()) {
