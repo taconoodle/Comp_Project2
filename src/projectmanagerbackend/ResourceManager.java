@@ -1,5 +1,7 @@
 package projectmanagerbackend;
 
+import static globals.Globals.*;
+
 public class ResourceManager {
     private Cluster cluster;
 
@@ -61,5 +63,15 @@ public class ResourceManager {
         cluster.setAvailableDiskSpace(cluster.getAvailableDiskSpace() + diskSpace);
         cluster.setAvailableBandwidth(cluster.getAvailableBandwidth() + bandwidth);
         cluster.setAvailableGPU(cluster.getAvailableGPU() + gpus);
+    }
+
+    protected double[] calculateTotalResources() {
+        double[] totalResources = new double[5];
+        totalResources[0] = AMOUNT_OF_CPU - cluster.getAvailableCPU();
+        totalResources[1] = AMOUNT_OF_RAM - cluster.getAvailableRAM();
+        totalResources[2] = AMOUNT_OF_DISK_SPACE - cluster.getAvailableDiskSpace();
+        totalResources[3] = AMOUNT_OF_GPU - cluster.getAvailableGPU();
+        totalResources[4] = NUM_OF_BANDWIDTH - cluster.getAvailableBandwidth();
+        return totalResources;
     }
 }

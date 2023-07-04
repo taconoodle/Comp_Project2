@@ -8,7 +8,8 @@ public class ProgramManager {
     }
 
     protected boolean createProgram(int cores, int ram, int diskSpace, int gpu, int bandwidth, int expectedTime) {
-        double[] totalResources = cluster.calculateTotalResources();
+        ResourceManager resMger = new ResourceManager(cluster);
+        double[] totalResources = resMger.calculateTotalResources();
         if ((cores <= 0 || cores > totalResources[0]) || (ram <= 0 || ram > totalResources[1]) || (diskSpace < 0 || diskSpace > totalResources[2]) || (gpu < 0 || gpu > totalResources[3]) ||
                 (bandwidth < 0 || bandwidth > totalResources[4]) || expectedTime <= 0) {
             System.out.println("\nSystem error: Invalid values or not enough VMs to support to execute the program.");
